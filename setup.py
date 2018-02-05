@@ -5,7 +5,7 @@
 
 from setuptools import setup, find_packages
 
-with open('README.rst') as readme_file:
+with open('README.markdown') as readme_file:
     readme = readme_file.read()
 
 with open('HISTORY.rst') as history_file:
@@ -25,9 +25,10 @@ test_requirements = [
 
 setup(
     name='fab_support',
-    version='0.0.0',
+    version='0.0.1',
     description="Code to implement staging in Fabric and recipes for using that staging for pelican deployments and Django to Heroku.",
     long_description=readme + '\n\n' + history,
+
     author="Humphrey Drummond",
     author_email='hum3@drummond.info',
     url='https://github.com/drummonds/fab_support',

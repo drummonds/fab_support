@@ -8,4 +8,7 @@ Sphinx==1.4.8
 # cryptography==1.7
 PyYAML==3.11
 fabric3==1.13.1.post1
-
+boto3
+pelican
+python-dotenv==0.6.3
+unipath
