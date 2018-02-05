@@ -41,11 +41,11 @@ set_stages (globals(), {
 })
 ```
 
-Then the deployment by Pelican is pretty standardised eg build deploly and you have commands such as:a\ZQSQ\Z
+Then the deployment by Pelican is pretty standardised eg build deploy and you have commands such as:
 
 `fab localsite deploy`
 
-I think it was inspired by [Breyten Ernsting]
+I think it was inspired by [Breyten Ernsting].  I copied the idea and then elaborated.
 
 
 [Breyten Ernsting]: http://yerb.net/blog/2014/03/03/multiple-environments-for-deployment-using-fabric/
