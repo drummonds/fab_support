@@ -41,7 +41,7 @@ set_stages (globals(), {
 })
 ```
 
-Then the deployment by Pelican is pretty standardised eg build deploly and you have commands such as:
+Then the deployment by Pelican is pretty standardised eg build deploly and you have commands such as:a\ZQSQ\Z
 
 `fab localsite deploy`
 
