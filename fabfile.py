@@ -58,6 +58,11 @@ def clean_build():
     find_and_remove_file('.', '.egg$')
 
 
+def clean_test():
+    """remove build artifacts"""
+    remove_tree(('tests/pelican',))
+
+
 def clean_pyc():
     """remove Python file artifacts"""
     find_and_remove_file('.', '.pyc$')

@@ -6,7 +6,7 @@
 
 import unittest
 
-from fab_support import fab_support
+from fab_support import pelican
 
 
 class TestFab_support(unittest.TestCase):

@@ -17,9 +17,30 @@
 
 
 Code to implement staging in Fabric and recipes for using that staging for pelican deployments and Django to Heroku.
+It supports a local .env file importing for storing secrets that you don't want to store in git.
+
+In the root fabfile create a dictionary like this which documents how to deploy each stage
+
+STAGES = {
+    'localhost': {
+        'comment': 'Local build and serving from output directory',
+        'destination': '',
+        'copy_method': copy_null,
+    },
+    'harddisk': {
+        'comment': 'For serving locally on this computer in another directory. ',
+        'destination': 'C:/Sites/www.drummond.info',
+        'copy_method': copy_file,
+    },
+    'production': {
+        'destination': 'W:/www.drummond.info',
+        'copy_method': copy_file,
+    },
+}
 
 ## Stages
-I have create a fab-support.py which does the heavy lifting.  Then in your fabric file you have a dictionary:
+I have create a fab-support.py which does the heavy lifting.  In the root fabfile create a dictionary like this which 
+documents how to deploy each stage:
 
 ```python
 # Definition of different environments to deploy to
@@ -58,6 +79,29 @@ I think it was inspired by [Breyten Ernsting].  I copied the idea and then elabo
 --------
 
 * TODO
+Clean up importing
+
+## Levels of fabfile in this module
+In this module I use three levels of fabfile.py:
+
+- At the project root
+- at the /tests root
+- at a test/demo level 
+
+### Project level fabfile
+This is used to do work on the distribution:
+
+- Make deocumentation
+- build wheels
+- deploy wheels to the package manager
+
+### At the tests level
+This is used to run local commands.  Often the commands will be run from the test fab file level and then `lcd` to the
+demo level.
+
+### AT the tests/demo level
+This is a model fabric file- however it is not like a normal one in that fab_support is not installed in the environment
+and in fact is located at `../../fab_support`.
 
 ## Credits
 ---------

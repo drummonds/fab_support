@@ -1,6 +1,7 @@
 import unittest
 
 from fab_support import set_stages, copy_null, copy_file
+from fabric.api import local
 
 
 class TestBasicFabSupport(unittest.TestCase):
@@ -27,3 +28,12 @@ class TestBasicFabSupport(unittest.TestCase):
             },
         })
 
+
+    def test_list(self):
+        """Aim is to run fab --list using the current version of fab-support"""
+        result = local('cd',capture=True)
+        print(result)
+        result = local('fab --list',capture=True)
+        print(result)
+        self.assertNotRegex(result,'builds source and wheel','Should not be using main fabfile')
+        self.assertRegex(result,'test_fab_file','Testing local fab')  # should be using local fab file
