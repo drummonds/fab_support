@@ -39,7 +39,7 @@ STAGES = {
 }
 
 ## Stages
-I have create a fab-support.py which does the heavy lifting.  In the root fabfile create a dictionary like this which 
+I have create a fab-support.py which does the heavy lifting.  In the root fabfile create a dictionary like this which
 documents how to deploy each stage:
 
 ```python
@@ -74,11 +74,28 @@ I think it was inspired by [Breyten Ernsting].  I copied the idea and then elabo
 * Free software: MIT license
 * Documentation: https://fab-support.readthedocs.io.
 
+# Settings
+These are the variables that are set inthe .env and are carried through to the development environments
+
+## Django settings
+
+Name | Default | Comments
+-----|---------|---------
+DJANGO_SETTINGS_MODULE| {{app_name}} | Two sccopes config.settings.test or config.settings.production, 
+
+
+# Heroku
+
+Name | Default | Comments
+-----|---------|---------
+HEROKU_APP_NAME | fab-support-test-app | Name must start with a letter and can only contain lowercase letters, numbers, and dashes. The production name should end in `prod` for additional protection.
+HEROKU_POSTGRES_TYPE | hobby-free | free to 10K rows, hobby_basic allows to 10M rows 
 
 ## Features
 --------
+Runs on Windows.  If it is getting to complex then it should probably be ported to Ansible or Salt.
 
-* TODO
+### TODO
 Clean up importing
 
 ## Levels of fabfile in this module
@@ -86,7 +103,7 @@ In this module I use three levels of fabfile.py:
 
 - At the project root
 - at the /tests root
-- at a test/demo level 
+- at a test/demo level
 
 ### Project level fabfile
 This is used to do work on the distribution:

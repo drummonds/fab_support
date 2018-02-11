@@ -5,6 +5,14 @@ import os
 import time
 
 
+DJANGO_SETTINGS_MODULE = 'production'  # Which settings configuration to use in DJnaog
+HEROKU_APP_NAME = 'fab-support-test-app'
+HEROKU_POSTGRES_TYPE = 'hobby-free'
+SUPERUSER_NAME = 'superuser'  # TODO may want to get rid of defaults
+SUPERUSER_EMAIL = 'info@demo.com'
+SUPERUSER_PASSWORD = 'akiualsdfha*&(j'  # TODO Need alternative
+GIT_BRANCH = 'master'
+
 ##################################################
 # Local utilities
 ##################################################
@@ -30,36 +38,41 @@ def default_db_colour(app_name):
     # if no colour found then try the long name in database_url
     # raise Exception(f'No color database names found for app {app_name} - create an extra one and it should be ok.')
     return data['DATABASE_URL']
-def set_environment_variables(env_prefix):
-    if env_prefix == 'test':
-        settings = 'develop'
-    else:
-        settings = 'production'
-    heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], env_prefix)
-    local(f"heroku config:set DJANGO_SETTINGS_MODULE=config.settings.{settings} --app {heroku_app}")
-    local('heroku config:set PYTHONHASHSEED=random --app {}"'.format(heroku_app))
-    local('heroku config:set DJANGO_ALLOWED_HOSTS="{1}.herokuapp.com" --app {1}'.
-          format(os.environ['DJANGO_ALLOWED_HOSTS'], heroku_app))
+
+
+def set_heroku_environment_variables():
+    """This sets all the enivornment variables that a Django recipe needs."""
+    local(f"heroku config:set DJANGO_SETTINGS_MODULE={DJANGO_SETTINGS_MODULE} --app {HEROKU_APP_NAME}")
+    local(f"heroku config:set PYTHONHASHSEED=random --app f{HEROKU_APP_NAME}")
+    try:
+        allowed_hosts = os.environ['DJANGO_ALLOWED_HOSTS']
+    except KeyError:
+        allowed_hosts = f'{HEROKU_APP_NAME}.herokuapp.com'
+    local(f'heroku config:set DJANGO_ALLOWED_HOSTS="{allowed_hosts}.herokuapp.com" --app {HEROKU_APP_NAME}')
+    # TODO 'DJANGO_SECRET_KEY' needs to be installed or have useful defaults
     for config in ( 'DJANGO_SECRET_KEY', 'DJANGO_ADMIN_URL'
         ,'DJANGO_AWS_ACCESS_KEY_ID', 'DJANGO_AWS_SECRET_ACCESS_KEY', 'DJANGO_AWS_STORAGE_BUCKET_NAME'
         ,'DJANGO_MAILGUN_API_KEY', 'DJANGO_SERVER_EMAIL', 'MAILGUN_SENDER_DOMAIN'
         ,'DJANGO_ACCOUNT_ALLOW_REGISTRATION', 'DJANGO_SENTRY_DSN'
         ,'XERO_CONSUMER_SECRET', 'XERO_CONSUMER_KEY'):
-        local('heroku config:set {}={} --app {}'.format(config, os.environ[config], heroku_app))
+        try:
+            local('heroku config:set {}={} --app {}'.format(config, os.environ[config], HEROKU_APP_NAME))
+        except KeyError:
+            # This environment variable won't be set
+            pass
 
 
-def raw_update_app(env_prefix='uat', branch='master'):
+def raw_update_app():
     """Update of app to latest version"""
-    heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], env_prefix)
     # Put the heroku app in maintenance move
-    set_environment_variables(env_prefix)  # In case anything has changed
+    set_heroku_environment_variables()  # In case anything has changed
     # connect git to the correct remote repository
-    local('heroku git:remote -a {}'.format(heroku_app))
+    local('heroku git:remote -a {}'.format(HEROKU_APP_NAME))
     # Need to push the branch in git to the master branch in the remote heroku repository
     local(f'git push heroku {branch}:master')
     # Don't need to scale workers down as not using eg heroku ps:scale worker=0
     # Will add guvscale to spin workers up and down from 0
-    local(f'heroku ps:scale worker=1 -a {heroku_app}')
+    local(f'heroku ps:scale worker=1 -a {HEROKU_APP_NAME}')
     # Have used performance web=standard-1x and worker=standard-2x but adjusted app to used less memory
     #local(f'heroku ps:resize web=standard-1x -a {heroku_app}')  # Resize web to be compatible with performance workers
     #local(f'heroku ps:resize worker=standard-2x -a {heroku_app}')  # Resize workers
@@ -67,19 +80,15 @@ def raw_update_app(env_prefix='uat', branch='master'):
     local('heroku run "yes \'yes\' | python manage.py migrate"')  # Force deletion of stale content types
 
 
-def _create_newbuild(env_prefix='test', branch='master'):
+def _create_newbuild():
     """This builds the database and waits for it be ready.  It is is safe to run and won't
     destroy any existing infrastructure."""
-    # subprocess.call('heroku create --app {} --region eu'.format(staging), shell=True)
-    heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], env_prefix)
-    # local('heroku create --app {} --region eu'.format(heroku_app))  # Old style
-    local('heroku create {0} --buildpack https://github.com/heroku/heroku-buildpack-python --region eu'
-          .format(heroku_app))
+    local(f'heroku create {HEROKU_APP_NAME} --buildpack https://github.com/heroku/heroku-buildpack-python --region eu')
     # This is where we create the database.  The type of database can range from hobby-dev for small
     # free access to standard for production quality docs
-    local('heroku addons:create heroku-postgresql:hobby-basic --app {0}'.format(heroku_app))
-    local(f'heroku addons:create cloudamqp:lemur --app {heroku_app}')
-    local(f'heroku addons:create papertrail:choklad --app {heroku_app}')
+    local(f'heroku addons:create heroku-postgresql:{HEROKU_POSTGRES_TYPE} --app {HEROKU_APP_NAME}')
+    local(f'heroku addons:create cloudamqp:lemur --app {HEROKU_APP_NAME}')
+    local(f'heroku addons:create papertrail:choklad --app {HEROKU_APP_NAME}')
     # Add guvscale processing to allow celery queue to be at zero
     # guvscale seems not to work in beta
     # local(f'heroku addons:create guvscale --app {heroku_app}')
@@ -101,11 +110,11 @@ def _create_newbuild(env_prefix='test', branch='master'):
     # start of configuring guvscale to autoscale
     # local(f'heroku guvscale:getconfig --app {heroku_app}')
     # set database backup schedule
-    local('heroku pg:wait --app {0}'.format(heroku_app))  # It takes some time for DB so wait for it
-    local('heroku pg:backups:schedule --at 04:00 --app {0}'.format(heroku_app))
+    local(f'heroku pg:wait --app {HEROKU_APP_NAME}')  # It takes some time for DB so wait for it
+    local(f'heroku pg:backups:schedule --at 04:00 --app {HEROKU_APP_NAME}')
     # Already promoted as new local('heroku pg:promote DATABASE_URL --app bene-prod')
     # Leaving out and aws and reddis
-    raw_update_app(env_prefix, branch=branch)
+    raw_update_app()
     local('heroku run python manage.py check --deploy') # make sure all ok
     su_name = os.environ['SUPERUSER_NAME']
     su_email = os.environ['SUPERUSER_EMAIL']
@@ -117,23 +126,43 @@ def _create_newbuild(env_prefix='test', branch='master'):
     local(cmd)
 
 
+def get_global_environment_variables():
+    print('get global variables')
+    # Get a number of predefined environmental variables and turn them into globals for fabric
+    for global_env in ('HEROKU_APP_NAME', 'HEROKU_POSTGRES_TYPE', 'SUPERUSER_NAME',
+                       'SUPERUSER_EMAIL', 'SUPERUSER_PASSWORD', 'GIT_BRANCH', 'DJANGO_SETTINGS_MODULE'):
+        try:
+            print(f'Var: {global_env} ', end='')
+            globals()[global_env] = os.environ[global_env]
+            print(f'  {global_env} = {os.environ[global_env]}')
+        except KeyError:
+            # This global variable will use the default
+            pass
+
+
 @task
-def create_newbuild(env_prefix='test', branch='master'):
-    _create_newbuild(env_prefix, branch)
-
-def _kill_app(env_prefix, safety_on=True):
-    """see _kill app"""
-    if not (env_prefix == 'prod' and safety_on):  # Safety check - remove when you need to
-        heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], env_prefix)
-        local('heroku destroy {0} --confirm {0}'.format(heroku_app))
-
-
-@task
-def kill_app(env_prefix, safety_on=True):
-    """Kill app notice that to the syntax for the production version is:
-    fab kill_app:prod,safety_on=False"""
+def create_newbuild():
     require('stage')
-    _kill_app(env_prefix, safety_on)
+    get_global_environment_variables()
+    _create_newbuild()
+
+def is_production():
+    return HEROKU_APP_NAME[-4:].lower() == 'prod'
+
+
+def _kill_app():
+    """see kill app"""
+    local(f'heroku destroy {HEROKU_APP_NAME} --confirm {HEROKU_APP_NAME}')
+
+
+@task
+def kill_app(safety_on=True):
+    """Kill app notice that to the syntax for the production version is:
+    fab the_stage kill_app:False"""
+    if not is_production() and not safety_on:
+        require('stage')
+        get_global_environment_variables()
+        _kill_app()
 
 
 @task

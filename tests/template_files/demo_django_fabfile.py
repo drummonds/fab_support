@@ -14,9 +14,11 @@ from fab_support.django import kill_app, build_app  # Can call directly
 
 # Definition of different environments to deploy to
 set_stages(globals(), {
-    'test': {
-        'comment': 'test version on Heroku',
-        'config_file': 'local_conf.py',
+    'demo': {
+        'comment': 'Demo version of Django to be deployed on Heroku',
+        'USES_CELERY': False,
+        'HEROKU_APP_NAME': 'fab-support-test-demo',
+        'GIT_BRANCH': 'master'
     },
 })
 

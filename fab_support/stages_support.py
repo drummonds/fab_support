@@ -23,16 +23,19 @@ def stage_set(stage_name='test'):
         if env['SITEURL']:
             os.environ['SITEURL'] = env['SITEURL']
         else:
-            warn('Setting SITEURL to null string doesn''t work for Pelican. Changed to .')
+            warn("Setting SITEURL to null string doesn't work for Pelican. Changed to .")
             os.environ['SITEURL'] = '.'  # Must be defined
     except KeyError:
         warn('Pelican requires SITEURL to be set.')
         os.environ['SITEURL'] = '.'  # Must be defined
 
 
+# noinspection PyUnusedLocal
 def create_a_function(stage_name, *args, **kwargs):
     """Create a simple Task function suitable for marking a stage.
     This just switches the staging environment."""
+
+    # noinspection PyUnusedLocal,PyShadowingNames
     def function_template(*args, **kwargs):
         if not hasattr(env, 'stage'):
             stage_set(stage_name)
@@ -43,7 +46,7 @@ def create_a_function(stage_name, *args, **kwargs):
 
 
 # Conversion of enumerated stages to functions
-def set_stages(namespace, stages): # namespace, stage_dict):
+def set_stages(namespace, stages):  # namespace, stage_dict):
     """Make each name in stage_dict a top level fabric task"""
     global STAGES
     STAGES = stages
@@ -70,4 +73,3 @@ def set_stages(namespace, stages): # namespace, stage_dict):
 def list_stages():
     for s in STAGES:
         print(s)
-
