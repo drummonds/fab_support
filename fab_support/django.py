@@ -52,7 +52,7 @@ def set_heroku_environment_variables():
         allowed_hosts = os.environ['DJANGO_ALLOWED_HOSTS']
     except KeyError:
         allowed_hosts = f'{HEROKU_APP_NAME}.herokuapp.com'
-    local(f'heroku config:set DJANGO_ALLOWED_HOSTS="{allowed_hosts}.herokuapp.com" --app {HEROKU_APP_NAME}')
+    local(f'heroku config:set DJANGO_ALLOWED_HOSTS="{allowed_hosts}" --app {HEROKU_APP_NAME}')
     # TODO 'DJANGO_SECRET_KEY' needs to be installed or have useful defaults
     for config in ('DJANGO_SECRET_KEY', 'DJANGO_ADMIN_URL'
                    , 'DJANGO_AWS_ACCESS_KEY_ID', 'DJANGO_AWS_SECRET_ACCESS_KEY', 'DJANGO_AWS_STORAGE_BUCKET_NAME'
