@@ -25,7 +25,8 @@ SECRET_KEY = 'k+f@awoj58mtqdithnzz_c-nz@cx&j^edp0d#8$7mriv@8h_$6'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', default=['fab-support-test-app.herokuapp.com', ])
+
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'fab-support-test-app.herokuapp.com').split(',')
 
 
 # Application definition
