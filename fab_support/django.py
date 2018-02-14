@@ -1,17 +1,20 @@
 import datetime as dt
-from fabric.api import local, task
+from fabric.api import env, local, task
 from fabric.operations import require
+import json
 import os
 import time
 
-
-DJANGO_SETTINGS_MODULE = 'production'  # Which settings configuration to use in DJnaog
+DJANGO_SETTINGS_MODULE = 'production'  # Which settings configuration to use in Django
 HEROKU_APP_NAME = 'fab-support-test-app'
-HEROKU_POSTGRES_TYPE = 'hobby-free'
+HEROKU_POSTGRES_TYPE = 'hobby-dev'
 SUPERUSER_NAME = 'superuser'  # TODO may want to get rid of defaults
 SUPERUSER_EMAIL = 'info@demo.com'
+# noinspection SpellCheckingInspection
 SUPERUSER_PASSWORD = 'akiualsdfha*&(j'  # TODO Need alternative
 GIT_BRANCH = 'master'
+USES_CELERY = False
+
 
 ##################################################
 # Local utilities
@@ -21,7 +24,8 @@ def remove_unused_db(env_prefix='uat'):
     """List all databases in use for app, find the main one and remove all the others"""
     heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], env_prefix)
     data = json.loads(local(f'heroku config --json --app {heroku_app}', capture=True))
-    for k,v in data.items():
+    for k, v in data.items():
+        # noinspection SpellCheckingInspection
         if k.find('HEROKU_POSTGRESQL_') == 0:
             if v != data['DATABASE_URL']:
                 local(f'heroku addons:destroy {k} --app {heroku_app} --confirm {heroku_app}')
@@ -31,7 +35,7 @@ def default_db_colour(app_name):
     """Return the default database colour of heroku application"""
     data = json.loads(local('heroku config --json --app {0}'.format(app_name), capture=True))
     result = ''
-    for k,v in data.items():
+    for k, v in data.items():
         if k.find('HEROKU_POSTGRESQL_') == 0:
             if v == data['DATABASE_URL']:
                 return k
@@ -41,20 +45,20 @@ def default_db_colour(app_name):
 
 
 def set_heroku_environment_variables():
-    """This sets all the enivornment variables that a Django recipe needs."""
+    """This sets all the environment variables that a Django recipe needs."""
     local(f"heroku config:set DJANGO_SETTINGS_MODULE={DJANGO_SETTINGS_MODULE} --app {HEROKU_APP_NAME}")
-    local(f"heroku config:set PYTHONHASHSEED=random --app f{HEROKU_APP_NAME}")
+    local(f"heroku config:set PYTHONHASHSEED=random --app {HEROKU_APP_NAME}")
     try:
         allowed_hosts = os.environ['DJANGO_ALLOWED_HOSTS']
     except KeyError:
         allowed_hosts = f'{HEROKU_APP_NAME}.herokuapp.com'
     local(f'heroku config:set DJANGO_ALLOWED_HOSTS="{allowed_hosts}.herokuapp.com" --app {HEROKU_APP_NAME}')
     # TODO 'DJANGO_SECRET_KEY' needs to be installed or have useful defaults
-    for config in ( 'DJANGO_SECRET_KEY', 'DJANGO_ADMIN_URL'
-        ,'DJANGO_AWS_ACCESS_KEY_ID', 'DJANGO_AWS_SECRET_ACCESS_KEY', 'DJANGO_AWS_STORAGE_BUCKET_NAME'
-        ,'DJANGO_MAILGUN_API_KEY', 'DJANGO_SERVER_EMAIL', 'MAILGUN_SENDER_DOMAIN'
-        ,'DJANGO_ACCOUNT_ALLOW_REGISTRATION', 'DJANGO_SENTRY_DSN'
-        ,'XERO_CONSUMER_SECRET', 'XERO_CONSUMER_KEY'):
+    for config in ('DJANGO_SECRET_KEY', 'DJANGO_ADMIN_URL'
+                   , 'DJANGO_AWS_ACCESS_KEY_ID', 'DJANGO_AWS_SECRET_ACCESS_KEY', 'DJANGO_AWS_STORAGE_BUCKET_NAME'
+                   , 'DJANGO_MAILGUN_API_KEY', 'DJANGO_SERVER_EMAIL', 'MAILGUN_SENDER_DOMAIN'
+                   , 'DJANGO_ACCOUNT_ALLOW_REGISTRATION', 'DJANGO_SENTRY_DSN'
+                   , 'XERO_CONSUMER_SECRET', 'XERO_CONSUMER_KEY'):
         try:
             local('heroku config:set {}={} --app {}'.format(config, os.environ[config], HEROKU_APP_NAME))
         except KeyError:
@@ -69,13 +73,14 @@ def raw_update_app():
     # connect git to the correct remote repository
     local('heroku git:remote -a {}'.format(HEROKU_APP_NAME))
     # Need to push the branch in git to the master branch in the remote heroku repository
-    local(f'git push heroku {branch}:master')
+    local(f'git push heroku {GIT_BRANCH}:master')
     # Don't need to scale workers down as not using eg heroku ps:scale worker=0
     # Will add guvscale to spin workers up and down from 0
-    local(f'heroku ps:scale worker=1 -a {HEROKU_APP_NAME}')
+    if USES_CELERY:
+        local(f'heroku ps:scale worker=1 -a {HEROKU_APP_NAME}')
     # Have used performance web=standard-1x and worker=standard-2x but adjusted app to used less memory
-    #local(f'heroku ps:resize web=standard-1x -a {heroku_app}')  # Resize web to be compatible with performance workers
-    #local(f'heroku ps:resize worker=standard-2x -a {heroku_app}')  # Resize workers
+    # local(f'heroku ps:resize web=standard-1x -a {heroku_app}')  # Resize web to be compatible with performance workers
+    # local(f'heroku ps:resize worker=standard-2x -a {heroku_app}')  # Resize workers
     # makemigrations should be run locally and the results checked into git
     local('heroku run "yes \'yes\' | python manage.py migrate"')  # Force deletion of stale content types
 
@@ -98,10 +103,10 @@ def _create_newbuild():
         print('Probably already installed')
     # Now need to create a token and add to guvscale
     # Does'nt work
-    #data = json.loads(local(
+    # data = json.loads(local(
     #    f'heroku authorizations:create --json --description "GuvScale" -s write,read-protected --app {heroku_app}',
     #    capture=True))
-    #print(f'Data for guvscale = :{data}')
+    # print(f'Data for guvscale = :{data}')
     # Load guvscale cli tool (may already be installed)
     try:
         local(f'heroku plugins:install heroku-guvscale')  # installed in local toolbelt not on app
@@ -112,29 +117,28 @@ def _create_newbuild():
     # set database backup schedule
     local(f'heroku pg:wait --app {HEROKU_APP_NAME}')  # It takes some time for DB so wait for it
     local(f'heroku pg:backups:schedule --at 04:00 --app {HEROKU_APP_NAME}')
-    # Already promoted as new local('heroku pg:promote DATABASE_URL --app bene-prod')
+    # Already promoted as new local('heroku pg:promote DATABASE_URL --app my-app-prod')
     # Leaving out and aws and reddis
     raw_update_app()
-    local('heroku run python manage.py check --deploy') # make sure all ok
-    su_name = os.environ['SUPERUSER_NAME']
-    su_email = os.environ['SUPERUSER_EMAIL']
-    su_password = os.environ['SUPERUSER_PASSWORD']
-    cmd = ('heroku run "echo \'from django.contrib.auth import get_user_model; User = get_user_model(); '
-        + f'User.objects.filter(email="""{su_email}""", is_superuser=True).delete(); '
-        + f'User.objects.create_superuser("""{su_name}""", """{su_email}""", """{su_password}""")\' '
-        + f' | python manage.py shell"' )
-    local(cmd)
+    local('heroku run python manage.py check --deploy')  # make sure all ok
+    # python maage.py migrate
+
+    # Create superuser - the interactive command does not allow you to script the password
+    # So this is a hack  workaround.
+    # Django 1 only
+    # cmd = ('heroku run "echo \'from django.contrib.auth import get_user_model; User = get_user_model(); '
+    #       + f'User.objects.filter(email="""{SUPERUSER_EMAIL}""", is_superuser=True).delete(); '
+    #       + f'User.objects.create_superuser("""{SUPERUSER_NAME}""", """{SUPERUSER_EMAIL}""", """{SUPERUSER_PASSWORD}""")\' '
+    #       + f' | python manage.py shell"')
+    # local(cmd)
 
 
 def get_global_environment_variables():
-    print('get global variables')
-    # Get a number of predefined environmental variables and turn them into globals for fabric
-    for global_env in ('HEROKU_APP_NAME', 'HEROKU_POSTGRES_TYPE', 'SUPERUSER_NAME',
+    # Get a number of predefined environmental from the staging system variables and turn them into globals for fabric
+    for global_env in ('HEROKU_APP_NAME', 'HEROKU_POSTGRES_TYPE', 'SUPERUSER_NAME', 'USES_CELERY',
                        'SUPERUSER_EMAIL', 'SUPERUSER_PASSWORD', 'GIT_BRANCH', 'DJANGO_SETTINGS_MODULE'):
         try:
-            print(f'Var: {global_env} ', end='')
-            globals()[global_env] = os.environ[global_env]
-            print(f'  {global_env} = {os.environ[global_env]}')
+            globals()[global_env] = env[global_env]
         except KeyError:
             # This global variable will use the default
             pass
@@ -145,6 +149,7 @@ def create_newbuild():
     require('stage')
     get_global_environment_variables()
     _create_newbuild()
+
 
 def is_production():
     return HEROKU_APP_NAME[-4:].lower() == 'prod'
@@ -159,7 +164,8 @@ def _kill_app():
 def kill_app(safety_on=True):
     """Kill app notice that to the syntax for the production version is:
     fab the_stage kill_app:False"""
-    if not is_production() and not safety_on:
+    # Todo Add steps to verify that it exists (optional) and make sure it is deleted at the end
+    if not (is_production() and not safety_on):
         require('stage')
         get_global_environment_variables()
         _kill_app()
@@ -179,13 +185,13 @@ def build_app(env_prefix='uat'):
         fab build_app:env_prefix=test"""
     start_time = time.time()
     try:
-        _kill_app(env_prefix)
+        _kill_app()
     except SystemExit:
         if env_prefix != 'prod':
-            pass # ignore errors in case original does not exist
+            pass  # ignore errors in case original does not exist
         else:
             raise Exception('Must stop if an error when deleting a production database.')
-    _create_newbuild(env_prefix, branch=env_prefix)
+    _create_newbuild()
     local(f'fab transfer_database_from_production:{env_prefix}')
     # makemigrations should be run locally and the results checked into git
     # Need to migrate the old database schema from the master production database
@@ -204,7 +210,7 @@ def _transfer_database_from_production(env_prefix='test', clean=True):
     heroku_app_prod = '{0}-prod'.format(os.environ['HEROKU_PREFIX'])
     # Put the heroku app in maintenance move
     try:
-        local('heroku maintenance:on --app {} '.format(heroku_app) )
+        local('heroku maintenance:on --app {} '.format(heroku_app))
         colour, db_name = create_new_db(env_prefix)  # color is ?
         # Don't need to scale workers down as not using eg heroku ps:scale worker=0
         local(f'heroku pg:copy {heroku_app_prod}::DATABASE_URL {colour} --app {heroku_app} --confirm {heroku_app}')
