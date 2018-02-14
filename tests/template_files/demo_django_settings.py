@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 
-# Load operating system environment variables and then prepare to use them
-env = os.environ.Env()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,7 +25,7 @@ SECRET_KEY = 'k+f@awoj58mtqdithnzz_c-nz@cx&j^edp0d#8$7mriv@8h_$6'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['fab-support-test-app.herokuapp.com', ])
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', default=['fab-support-test-app.herokuapp.com', ])
 
 
 # Application definition
