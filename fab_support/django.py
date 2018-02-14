@@ -121,7 +121,7 @@ def _create_newbuild():
     # Leaving out and aws and reddis
     raw_update_app()
     local('heroku run python manage.py check --deploy')  # make sure all ok
-    # python maage.py migrate
+    local('heroku run python manage.py migrate"')
 
     # Create superuser - the interactive command does not allow you to script the password
     # So this is a hack  workaround.

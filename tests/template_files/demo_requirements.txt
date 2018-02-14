@@ -1,2 +1,7 @@
 django==2.0.2
-psycopg2==2.4.5  # Without this will crash?
+psycopg2==2.7.4  # Without this will crash?
+
+# WSGI Handler
+# ------------------------------------------------
+gunicorn==19.7.1
+
