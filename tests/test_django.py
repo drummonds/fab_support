@@ -18,8 +18,12 @@ def clean_setup():
     # before try and remove
     if os.path.isdir('tests'):
         my_path = 'tests/demo_django'
-    else:
+        my_path2 = 'tests/'
+    elif os.path.isdir('template_files'):
         my_path = 'demo_django'
+        my_path2 = ''
+    else:
+        raise Exception
     with lcd(my_path):
         try:
             local('fab demo fab_support.django.kill_app')  # Remove any existing run time
@@ -30,18 +34,15 @@ def clean_setup():
         with lcd(my_path):
             local('del /F /S /Q /A .git')
             pass
-    except FileNotFoundError:
+    except (FileNotFoundError, SystemExit):
         pass
-    if os.path.isdir('tests'):
-        my_path2 = 'tests'
-    else:
-        my_path2 = '.'
     with lcd(my_path2):
         try:
-            shutil.rmtree('demo_django')
+            shutil.rmtree(my_path2+'demo_django')
         except FileNotFoundError:
-            pass
-
+            result = local('dir', capture=True)
+            print('== Failed to remove tree ==')
+            print(result)
 
 def clean_test_django():
     clean_test_set_stages()
