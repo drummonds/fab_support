@@ -9,6 +9,7 @@ django-tables2==1.19.0
 fabric3==1.13.1.post1
 flake8==3.5.0
 pelican==3.7.1
+psycopg2-binary==2.7.4  # Without this will crash?
 python-dotenv==0.7.1
 recommonmark==0.4.0  # To support Markdown in docs
 tox==3.0.0rc1
