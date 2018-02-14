@@ -3,5 +3,6 @@ psycopg2==2.7.4  # Without this will crash?
 
 # WSGI Handler
 # ------------------------------------------------
+gevent==1.2.2
 gunicorn==19.7.1
 
