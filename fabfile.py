@@ -2,7 +2,9 @@ from fabric.api import task, local
 from os import remove, walk
 from os.path import join
 import re
-from shutil import rmtree
+
+from tests.test_utils import remove_tree
+from tests.test_django import clean_test_django
 
 
 @task
@@ -11,15 +13,8 @@ def clean():
     clean_build()
     clean_pyc()
     clean_test()
-
-
-def remove_tree(path):
-    assert path not in ('c:\\', 'c:', '\\', '/')  # Add safety check
-    if isinstance(path, tuple) or isinstance(path, list):
-        for this in path:
-            remove_tree(this)
-    else:
-        rmtree(path, ignore_errors=True)
+    clean_test_pelican()
+    clean_test_django()
 
 
 def find_and_remove_tree(path, match):
@@ -58,7 +53,7 @@ def clean_build():
     find_and_remove_file('.', '.egg$')
 
 
-def clean_test():
+def clean_test_pelican():
     """remove build artifacts"""
     remove_tree(('tests/pelican',))
 
