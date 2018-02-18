@@ -79,9 +79,9 @@ def raw_update_app():
     # Need to push the branch in git to the master branch in the remote heroku repository
     print(f' Running >{GIT_PUSH}<, type = {type(GIT_PUSH)}')
     if 'GIT_PUSH' == '':  # test for special case probably deploying a subtree
+        local(f'git push heroku {GIT_BRANCH}:master')
         exit(-98)
     else:
-        local(f'git push heroku {GIT_BRANCH}:master')
         # The command will probably be like this:
         # 'GIT_PUSH': 'git subtree push --prefix tests/my_heroku_project heroku master',
         print(f' Starting GIT_PUSH')
