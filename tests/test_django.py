@@ -49,10 +49,8 @@ def clean_setup_postgres():
     # before try and remove
     if os.path.isdir('tests'):
         my_path = 'tests/demo_django_postgres'
-        my_path2 = 'tests/'
     elif os.path.isdir('template_files'):
         my_path = 'demo_django'
-        my_path2 = ''
     else:
         raise Exception
     with lcd(my_path):
@@ -61,15 +59,6 @@ def clean_setup_postgres():
                 local(f'fab {stage} fab_support.django.kill_app')  # Remove any existing run time
             except SystemExit:
                 pass
-    # Although we only want to remove .git which is only used to communicate with heroku
-    # Deploy from main git (not as clean deployments)
-    # bodge to get .git file delete keeps giving a PermissionError after testing about a git file
-    try:
-        with lcd(my_path):
-            local('del /F /S /Q /A .git')
-            pass
-    except (FileNotFoundError, SystemExit):
-        pass
 
 def clean_test_django():
     clean_test_set_stages()
@@ -98,12 +87,6 @@ class TestBasicFabSupport(unittest.TestCase):
         with lcd('demo_django'):
             local('mkdir static')  # Heroku needs a place to put static files in collectstatic and won't create it.
             local('copy ..\\template_files\\demo_django_fabfile.py static\\fabfile.py')  # To make git recognise it
-            local('git add .')
-            local("git commit -m 'start'")
-        # Setup a git for Heroku to use to deploy demo_django_postgres
-        clean_setup_postgres() # removes old .git
-        local('git init demo_django_postgres')
-        with lcd('demo_django_postgres'):
             local('git add .')
             local("git commit -m 'start'")
 

@@ -12,6 +12,7 @@ SUPERUSER_NAME = 'superuser'  # TODO may want to get rid of defaults
 SUPERUSER_EMAIL = 'info@demo.com'
 # noinspection SpellCheckingInspection
 SUPERUSER_PASSWORD = 'akiualsdfha*&(j'  # TODO Need alternative
+GIT_PUSH = ''  # Default to false
 GIT_BRANCH = 'master'
 USES_CELERY = False
 
@@ -73,7 +74,12 @@ def raw_update_app():
     # connect git to the correct remote repository
     local('heroku git:remote -a {}'.format(HEROKU_APP_NAME))
     # Need to push the branch in git to the master branch in the remote heroku repository
-    local(f'git push heroku {GIT_BRANCH}:master')
+    if 'GIT_PUSH':  # Special case probably deploying a subtree
+        # The command will probably be like this:
+        # 'GIT_PUSH': 'git subtree push --prefix tests/my_heroku_project heroku master',
+        local(GIT_PUSH)
+    else:
+        local(f'git push heroku {GIT_BRANCH}:master')
     # Don't need to scale workers down as not using eg heroku ps:scale worker=0
     # Will add guvscale to spin workers up and down from 0
     if USES_CELERY:
