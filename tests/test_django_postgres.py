@@ -16,7 +16,7 @@ def clean_setup_postgres():
     if os.path.isdir('tests'):
         my_path = 'tests/demo_django_postgres'
     elif os.path.isdir('template_files'):
-        my_path = 'demo_django'
+        my_path = 'demo_django_postgres'
     else:
         raise Exception
     with lcd(my_path):

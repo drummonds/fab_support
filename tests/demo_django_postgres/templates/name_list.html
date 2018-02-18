@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% load render_table from django_tables2 %}
+{% block content %}
+    <h1>List of Names</h1>
+    <hr/>
+    <p>{% render_table objects %}</p>
+{% endblock content %}

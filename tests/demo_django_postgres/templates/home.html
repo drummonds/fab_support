@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% block content %}
+    <h1>Fab Support</h1>
+    <p>This is a very simple demo application with a home page and a data driven data page.</p>
+
+    {% if request.user.is_authenticated %}
+    <p>You are logged in</p>
+    {% endif %}
+{% endblock content %}

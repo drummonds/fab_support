@@ -55,6 +55,7 @@ def set_heroku_environment_variables():
         allowed_hosts = f'{HEROKU_APP_NAME}.herokuapp.com'
     local(f'heroku config:set DJANGO_ALLOWED_HOSTS="{allowed_hosts}" --app {HEROKU_APP_NAME}')
     # TODO 'DJANGO_SECRET_KEY' needs to be installed or have useful defaults
+    not_used = []
     for config in ('DJANGO_SECRET_KEY', 'DJANGO_ADMIN_URL'
                    , 'DJANGO_AWS_ACCESS_KEY_ID', 'DJANGO_AWS_SECRET_ACCESS_KEY', 'DJANGO_AWS_STORAGE_BUCKET_NAME'
                    , 'DJANGO_MAILGUN_API_KEY', 'DJANGO_SERVER_EMAIL', 'MAILGUN_SENDER_DOMAIN'
@@ -64,7 +65,9 @@ def set_heroku_environment_variables():
             local('heroku config:set {}={} --app {}'.format(config, os.environ[config], HEROKU_APP_NAME))
         except KeyError:
             # This environment variable won't be set
-            pass
+            not_used.append(config)
+    if not_used:
+        print(f'The following config variables were not used: {not_used}')
 
 
 def raw_update_app():
@@ -74,12 +77,16 @@ def raw_update_app():
     # connect git to the correct remote repository
     local('heroku git:remote -a {}'.format(HEROKU_APP_NAME))
     # Need to push the branch in git to the master branch in the remote heroku repository
-    if 'GIT_PUSH':  # Special case probably deploying a subtree
+    print(f' Running >{GIT_PUSH}<, type = {type(GIT_PUSH)}')
+    if 'GIT_PUSH' == '':  # Special case probably deploying a subtree
         # The command will probably be like this:
         # 'GIT_PUSH': 'git subtree push --prefix tests/my_heroku_project heroku master',
+        print(f' Starting GIT_PUSH')
         local(GIT_PUSH)
+        exit(-99)
     else:
         local(f'git push heroku {GIT_BRANCH}:master')
+    exit(-99)
     # Don't need to scale workers down as not using eg heroku ps:scale worker=0
     # Will add guvscale to spin workers up and down from 0
     if USES_CELERY:
@@ -91,6 +98,26 @@ def raw_update_app():
     local('heroku run "yes \'yes\' | python manage.py migrate"')  # Force deletion of stale content types
 
 
+def install_heroku_plugins(plug_in_list):
+    # plugins doesn't support returning --json
+    results = local('heroku plugins --core', capture=True)  # returns string or string list
+    result_list = results.split('\n')
+    plugin_dict = {}
+    for result in result_list:
+        parts = result.split(' ')
+        try:
+            plugin_dict[parts[0]] = parts[1]
+        except IndexError:
+            plugin_dict[parts[0]] = ''
+    for plug_in in plug_in_list:
+        if not plug_in in plugin_dict:
+            local(f'heroku plugins:install {plug_in}')  # installed in local toolbelt not on app
+            # If it fails then it really is a failure not just it has already been installed.
+    return True  # Got to end and all installed
+    # print(f'|{results}|')
+
+
+# #############
 def _create_newbuild():
     """This builds the database and waits for it be ready.  It is is safe to run and won't
     destroy any existing infrastructure."""
@@ -101,23 +128,7 @@ def _create_newbuild():
     local(f'heroku addons:create cloudamqp:lemur --app {HEROKU_APP_NAME}')
     local(f'heroku addons:create papertrail:choklad --app {HEROKU_APP_NAME}')
     # Add guvscale processing to allow celery queue to be at zero
-    # guvscale seems not to work in beta
-    # local(f'heroku addons:create guvscale --app {heroku_app}')
-    try:
-        local(f'heroku plugins:install heroku-cli-oauth')  # installed in local toolbelt not on app
-    except:
-        print('Probably already installed')
-    # Now need to create a token and add to guvscale
-    # Does'nt work
-    # data = json.loads(local(
-    #    f'heroku authorizations:create --json --description "GuvScale" -s write,read-protected --app {heroku_app}',
-    #    capture=True))
-    # print(f'Data for guvscale = :{data}')
-    # Load guvscale cli tool (may already be installed)
-    try:
-        local(f'heroku plugins:install heroku-guvscale')  # installed in local toolbelt not on app
-    except:
-        print('Probably already installed')
+    install_heroku_plugins(['heroku-cli-oauth', 'heroku-guvscale'])
     # start of configuring guvscale to autoscale
     # local(f'heroku guvscale:getconfig --app {heroku_app}')
     # set database backup schedule
@@ -141,7 +152,8 @@ def _create_newbuild():
 def get_global_environment_variables():
     # Get a number of predefined environmental from the staging system variables and turn them into globals for fabric
     for global_env in ('HEROKU_APP_NAME', 'HEROKU_POSTGRES_TYPE', 'SUPERUSER_NAME', 'USES_CELERY',
-                       'SUPERUSER_EMAIL', 'SUPERUSER_PASSWORD', 'GIT_BRANCH', 'DJANGO_SETTINGS_MODULE'):
+                       'SUPERUSER_EMAIL', 'SUPERUSER_PASSWORD',  'GIT_BRANCH', 'GIT_PUSH',
+                       'DJANGO_SETTINGS_MODULE'):
         try:
             globals()[global_env] = env[global_env]
         except KeyError:
@@ -208,7 +220,7 @@ def build_app(env_prefix='uat'):
 
 
 def _transfer_database_from_production(env_prefix='test', clean=True):
-    """This is usally used for making a copy of the production database for a UAT staging
+    """This is usually used for making a copy of the production database for a UAT staging
     or test environment.  It can also be used to upgrade the production environment from one
     database plan to the next. """
     heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], env_prefix)

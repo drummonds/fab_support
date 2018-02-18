@@ -1,0 +1,3 @@
+web: gunicorn demo_django.wsgi:application
+# worker: celery worker --app=demo_django_postgres.celery.app --loglevel=info
+
