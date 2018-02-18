@@ -44,26 +44,10 @@ def clean_setup():
             print('== Failed to remove tree ==')
             print(result)
 
-def clean_setup_postgres():
-    # Try and remove running apps however relies on demo_django directory not being deleted
-    # before try and remove
-    if os.path.isdir('tests'):
-        my_path = 'tests/demo_django_postgres'
-    elif os.path.isdir('template_files'):
-        my_path = 'demo_django'
-    else:
-        raise Exception
-    with lcd(my_path):
-        for stage in ('test', 'uat', 'prod'):
-            try:
-                local(f'fab {stage} fab_support.django.kill_app')  # Remove any existing run time
-            except SystemExit:
-                pass
 
 def clean_test_django():
     clean_test_set_stages()
     clean_setup()
-    clean_setup_postgres()
     print('Cleaned test_django extras')
 
 
@@ -120,7 +104,7 @@ class TestBasicFabSupport(unittest.TestCase):
     def test_got_heroku_and_build(self):
         """
         The Django version is meant to be as simple as possible. eg it is running from a sqlite database even
-        though it has a Postgres Database avaialable.
+        though it has a Postgres Database available.
         After running this the directory is kept available.  You can test the server locally by:
         - running the dev environment
         - switching to tests\demo_django
@@ -140,48 +124,6 @@ class TestBasicFabSupport(unittest.TestCase):
             except SystemExit:
                 pass
             local('fab demo fab_support.django.create_newbuild')  # Build database from scratch
-            # local('fab demo fab_support.django.kill_app')  # By default don't let it run after test
-
-    def test_django_postgres(self):
-        """
-        The Django version is a basic Postgres application.  It has a single app with a single model.
-        It is meant to examine the operation of Django app with test, uat and production builds.
-
-        This allows test data and production data to be simulated.
-
-        After running this the directory is kept available.  You can test the server locally as above.
-
-        We will follow the following story:
-
-        Build test with test data
-        New Build UAT with new production data
-        Promote UAT to production
-        Build UAT with production data
-        Update production
-        Promote UAT to production
-        Build test with production data
-
-
-        The Heroku test version that is spun up is a test version at zero cost.
-        """
-        with lcd('demo_django_postgres'):
-            # Check staging and fabfile are correct
-            result = local('fab --list', capture=True)
-            self.assertRegex(result, 'test', 'test stage')
-            self.assertRegex(result, 'uat', 'UAT stage')
-            self.assertRegex(result, 'prod', 'production stage')
-            self.assertRegex(result, 'test_django_postgres_fab_file', 'The fabfile has defined a new task.')
-            try:
-                local('fab test fab_support.django.kill_app')  # Remove any existing run time
-                local('fab uat fab_support.django.kill_app')  # Remove any existing run time
-                local('fab prod fab_support.django.kill_app')  # Remove any existing run time
-            except SystemExit:
-                pass
-            local('fab test fab_support.django.create_newbuild')  # Build database from scratch
-            # local('fab demo fab_support.django.kill_app')  # By default don't let it run after test
-
-
-
 
     def test_got_local_fabfile(self):
         with lcd('demo_django'):
@@ -201,5 +143,4 @@ class TestBasicFabSupport(unittest.TestCase):
     #     """Check that have wsl version of heroku and is logged in."""
     #     result = local('bash /usr/bin/heroku status', capture=True)
     #     self.assertRegex(result, 'Apps\:', 'Make sure have heroku working and logged in')
-
-
+    # local('fab demo fab_support.django.kill_app')  # By default don't let it run after test

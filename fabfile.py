@@ -5,6 +5,7 @@ import re
 
 from tests.test_utils import remove_tree
 from tests.test_django import clean_test_django
+from tests.test_django_postgres import clean_setup_postgres
 
 
 @task
@@ -15,6 +16,8 @@ def clean():
     clean_test()
     clean_test_pelican()
     clean_test_django()
+    clean_setup_postgres()
+
 
 
 def find_and_remove_tree(path, match):
