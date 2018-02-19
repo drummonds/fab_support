@@ -1,5 +1,5 @@
 import datetime as dt
-from fabric.api import env, local, task
+from fabric.api import env, local, task, lcd
 from fabric.operations import require
 import json
 import os
@@ -80,14 +80,14 @@ def raw_update_app():
     # Need to push the branch in git to the master branch in the remote heroku repository
     print(f' Running >{GIT_PUSH}<, type = {type(GIT_PUSH)}')
     if 'GIT_PUSH' == '':  # test for special case probably deploying a subtree
-        with lcd(GIT_PUSH_DIR):
-            local(f'git push heroku {GIT_BRANCH}:master')
+        local(f'git push heroku {GIT_BRANCH}:master')
         exit(-98)
     else:
         # The command will probably be like this:
         # 'GIT_PUSH': 'git subtree push --prefix tests/my_heroku_project heroku master',
         print(f' Starting GIT_PUSH')
-        local(GIT_PUSH)
+        with lcd(GIT_PUSH_DIR):
+            local(GIT_PUSH)
         exit(-99)
     # Don't need to scale workers down as not using eg heroku ps:scale worker=0
     # Will add guvscale to spin workers up and down from 0
