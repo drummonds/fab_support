@@ -9,7 +9,7 @@ __version__ = '0.0.3'
 
 from .django import *
 from .env_support import *
-from .pelican import *
+# from .pelican import *
 from .stages_support import set_stages, list_stages
 from .utils import *
 

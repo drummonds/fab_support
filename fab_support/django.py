@@ -73,24 +73,19 @@ def set_heroku_environment_variables():
 
 def raw_update_app():
     """Update of app to latest version"""
-    # Put the heroku app in maintenance move
+    # Put the heroku app in maintenance mode TODO
     set_heroku_environment_variables()  # In case anything has changed
     # connect git to the correct remote repository
     local('heroku git:remote -a {}'.format(HEROKU_APP_NAME))
     # Need to push the branch in git to the master branch in the remote heroku repository
-    print(f' Running >{GIT_PUSH}<, type = {type(GIT_PUSH)}')
     if 'GIT_PUSH' == '':  # test for special case probably deploying a subtree
         local(f'git push heroku {GIT_BRANCH}:master')
         exit(-98)
     else:
         # The command will probably be like this:
         # 'GIT_PUSH': 'git subtree push --prefix tests/my_heroku_project heroku master',
-        print(f" Starting GIT_PUSH at >{GIT_PUSH_DIR}<, cwd = {os.getcwd()}, local CD {local('cd', capture = True)}")
         with lcd(GIT_PUSH_DIR):
-            print(f"  Now cwd = {os.getcwd()}, local CD {local('cd', capture = True)}")
             local(GIT_PUSH)
-            print(f"  Now cwd = {os.getcwd()}, local CD {local('cd', capture = True)}")
-        exit(-99)
     # Don't need to scale workers down as not using eg heroku ps:scale worker=0
     # Will add guvscale to spin workers up and down from 0
     if USES_CELERY:
@@ -156,7 +151,8 @@ def _create_newbuild():
 def get_global_environment_variables():
     # Get a number of predefined environmental from the staging system variables and turn them into globals for fabric
     for global_env in ('HEROKU_APP_NAME', 'HEROKU_POSTGRES_TYPE', 'SUPERUSER_NAME', 'USES_CELERY',
-                       'SUPERUSER_EMAIL', 'SUPERUSER_PASSWORD',  'GIT_BRANCH', 'GIT_PUSH',
+                       'SUPERUSER_EMAIL', 'SUPERUSER_PASSWORD',
+                       'GIT_BRANCH', 'GIT_PUSH', 'GIT_PUSH_DIR',
                        'DJANGO_SETTINGS_MODULE'):
         try:
             globals()[global_env] = env[global_env]

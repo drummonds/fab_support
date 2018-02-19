@@ -19,7 +19,7 @@ set_stages(globals(), {
         'comment': 'Test version of Django to be deployed on Heroku',
         'DJANGO_SETTINGS_MODULE': 'demo_django.settings',  # Essential as django doesn't know name of app
         'HEROKU_APP_NAME': 'fab-support-test-postgres-test',
-        'GIT_PUSH': 'git subtree push --prefix tests/my_heroku_project heroku master',
+        'GIT_PUSH': 'git subtree push --prefix tests/demo_django_postgres heroku master',
         'GIT_PUSH_DIR': '../..',
         'GIT_BRANCH': 'master'
     },
@@ -27,14 +27,16 @@ set_stages(globals(), {
         'comment': 'UAT version of Django to be deployed on Heroku',
         'DJANGO_SETTINGS_MODULE': 'demo_django.settings',  # Essential as django doesn't know name of app
         'HEROKU_APP_NAME': 'fab-support-test-postgres-uat',
-        'GIT_PUSH': 'git subtree push --prefix tests/my_heroku_project heroku master',
+        'GIT_PUSH': 'git subtree push --prefix tests/demo_django_postgres heroku master',
+        'GIT_PUSH_DIR': '../..',
         'GIT_BRANCH': 'master'
     },
     'prod': {
         'comment': 'Production version of Django to be deployed on Heroku',
         'DJANGO_SETTINGS_MODULE': 'demo_django.settings',  # Essential as django doesn't know name of app
         'HEROKU_APP_NAME': 'fab-support-test-postgres-prod',
-        'GIT_PUSH': 'git subtree push --prefix tests/my_heroku_project heroku master',
+        'GIT_PUSH': 'git subtree push --prefix tests/demo_django_postgres heroku master',
+        'GIT_PUSH_DIR': '../..',
         'GIT_BRANCH': 'master'
     },
 })
