@@ -85,9 +85,11 @@ def raw_update_app():
     else:
         # The command will probably be like this:
         # 'GIT_PUSH': 'git subtree push --prefix tests/my_heroku_project heroku master',
-        print(f' Starting GIT_PUSH')
+        print(f" Starting GIT_PUSH at >{GIT_PUSH_DIR}<, cwd = {os.getcwd()}, local CD {local('cd', capture = True)}")
         with lcd(GIT_PUSH_DIR):
+            print(f"  Now cwd = {os.getcwd()}, local CD {local('cd', capture = True)}")
             local(GIT_PUSH)
+            print(f"  Now cwd = {os.getcwd()}, local CD {local('cd', capture = True)}")
         exit(-99)
     # Don't need to scale workers down as not using eg heroku ps:scale worker=0
     # Will add guvscale to spin workers up and down from 0

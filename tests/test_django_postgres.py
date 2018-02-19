@@ -27,7 +27,6 @@ def clean_setup_postgres():
                 pass
 
 
-
 class TestDjangoPostgresSupport(unittest.TestCase):
 
     def setUp(self):
