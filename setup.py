@@ -25,8 +25,8 @@ test_requirements = [
 
 # TODO copy version from __init__ or vice versa can also do author and author email
 setup(
-    name='fab_support',
-    version='0.1.4',
+    name='fab-support',
+    version='0.1.5',
     description="Code to implement staging in Fabric and recipes for using that staging for pelican deployments and Django to Heroku.",
     long_description=readme + '\n\n' + history,
 
@@ -38,7 +38,7 @@ setup(
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
-    keywords='fab_support',
+    keywords='fab-support',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
@@ -51,6 +51,6 @@ setup(
     tests_require=test_requirements,
     setup_requires=setup_requirements,
     entry_points={
-        'console_scripts': ['fab-support=fab_suport.command_line:main'],
+        'console_scripts': ['fab-support=fab_support.command_line:main'],
     }
 )

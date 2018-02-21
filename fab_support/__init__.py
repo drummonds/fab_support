@@ -4,7 +4,7 @@
 
 __author__ = """Humphrey Drummond"""
 __email__ = 'hum3@drummond.info'
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 
 from .env_support import *
