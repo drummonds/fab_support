@@ -9,6 +9,7 @@ django-environ==0.4.4
 django-tables2==1.19.0
 fabric3==1.13.1.post1
 flake8==3.5.0
+model_mommy==1.5.1
 pelican==3.7.1
 psycopg2-binary==2.7.4  # Without this will crash?
 python-dotenv==0.7.1

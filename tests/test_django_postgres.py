@@ -64,6 +64,7 @@ class TestDjangoPostgresSupport(unittest.TestCase):
 
         We will follow the following story:
 
+        Build test with no data
         Build test with test data
         New Build UAT with new production data
         Promote UAT to production
