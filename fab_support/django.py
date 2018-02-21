@@ -212,7 +212,7 @@ def build_app(stage='uat'):
         else:
             raise Exception('Must stop if an error when deleting a production database.')
     _create_newbuild()
-    local(f'fab transfer_database_from_production:{stage}')
+    _transfer_database_from_production(stage)
     # makemigrations should be run locally and the results checked into git
     # Need to migrate the old database schema from the master production database
     local('heroku run "yes \'yes\' | python manage.py migrate"')  # Force deletion of stale content types
