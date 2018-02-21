@@ -202,6 +202,7 @@ def build_app(stage='uat'):
     so can build a test branch with:
         fab build_app:env_prefix=test"""
     start_time = time.time()
+    get_global_environment_variables(stage)
     try:
         _kill_app()
     except SystemExit:

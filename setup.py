@@ -25,7 +25,7 @@ test_requirements = [
 
 setup(
     name='fab_support',
-    version='0.1.1',
+    version='0.1.2',
     description="Code to implement staging in Fabric and recipes for using that staging for pelican deployments and Django to Heroku.",
     long_description=readme + '\n\n' + history,
 
