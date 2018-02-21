@@ -25,7 +25,7 @@ test_requirements = [
 
 setup(
     name='fab_support',
-    version='0.0.3',
+    version='0.1.0',
     description="Code to implement staging in Fabric and recipes for using that staging for pelican deployments and Django to Heroku.",
     long_description=readme + '\n\n' + history,
 
@@ -44,8 +44,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
@@ -53,5 +51,5 @@ setup(
     setup_requires=setup_requirements,
     entry_points={
         'console_scripts': ['fab-support=fab_suport.command_line:main'],
-
+    }
 )

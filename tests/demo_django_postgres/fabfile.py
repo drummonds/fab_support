@@ -1,6 +1,7 @@
 from fabric.api import task
 
-
+# Need to modify path so fab_support is found
+# This is only needed to run test fabfiles in a test directory
 import sys
 from pathlib import Path  # if you haven't already done so
 file = Path(__file__).resolve()
@@ -9,7 +10,6 @@ sys.path.append(str(root))
 
 # noinspection PyUnresolvedReferences
 import fab_support
-from fab_support import set_stages
 # noinspection PyUnresolvedReferences
 from fab_support.django import kill_app, build_app  # Can call directly
 

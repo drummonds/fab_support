@@ -78,9 +78,9 @@ def raw_update_app():
     # connect git to the correct remote repository
     local('heroku git:remote -a {}'.format(HEROKU_APP_NAME))
     # Need to push the branch in git to the master branch in the remote heroku repository
-    if 'GIT_PUSH' == '':  # test for special case probably deploying a subtree
+    print(f'GIT_PUSH_DIR = {GIT_PUSH_DIR}, GIT_PUSH = {GIT_PUSH}, GIT_BRANCH = {GIT_BRANCH}')
+    if GIT_PUSH == '':  # test for special case probably deploying a subtree
         local(f'git push heroku {GIT_BRANCH}:master')
-        exit(-98)
     else:
         # The command will probably be like this:
         # 'GIT_PUSH': 'git subtree push --prefix tests/my_heroku_project heroku master',
@@ -148,23 +148,24 @@ def _create_newbuild():
     # local(cmd)
 
 
-def get_global_environment_variables():
-    # Get a number of predefined environmental from the staging system variables and turn them into globals for fabric
+def get_global_environment_variables(stage):
+    # Get a number of predefined environment variables from the staging system variables
+    # and turn them into globals for use in this script
+    # TODO perhaps cconvert to another method of access
     for global_env in ('HEROKU_APP_NAME', 'HEROKU_POSTGRES_TYPE', 'SUPERUSER_NAME', 'USES_CELERY',
                        'SUPERUSER_EMAIL', 'SUPERUSER_PASSWORD',
                        'GIT_BRANCH', 'GIT_PUSH', 'GIT_PUSH_DIR',
                        'DJANGO_SETTINGS_MODULE'):
         try:
-            globals()[global_env] = env[global_env]
+            globals()[global_env] = env['stages'][stage][global_env]
         except KeyError:
             # This global variable will use the default
             pass
 
 
 @task
-def create_newbuild():
-    require('stage')
-    get_global_environment_variables()
+def create_newbuild(stage):
+    get_global_environment_variables(stage)
     _create_newbuild()
 
 
@@ -178,13 +179,12 @@ def _kill_app():
 
 
 @task
-def kill_app(safety_on=True):
+def kill_app(stage, safety_on=True):
     """Kill app notice that to the syntax for the production version is:
     fab the_stage kill_app:False"""
     # Todo Add steps to verify that it exists (optional) and make sure it is deleted at the end
     if not (is_production() and not safety_on):
-        require('stage')
-        get_global_environment_variables()
+        get_global_environment_variables(stage)
         _kill_app()
 
 
@@ -195,7 +195,7 @@ def build_uat():
 
 
 @task
-def build_app(env_prefix='uat'):
+def build_app(stage='uat'):
     """Build a test environment. Default is uat.
     So fab build_app  is equivalent to fab build_app:uat  and to fab build_app:env_prefix=uat
     so can build a test branch with:
@@ -204,7 +204,7 @@ def build_app(env_prefix='uat'):
     try:
         _kill_app()
     except SystemExit:
-        if env_prefix != 'prod':
+        if stage != 'prod':
             pass  # ignore errors in case original does not exist
         else:
             raise Exception('Must stop if an error when deleting a production database.')

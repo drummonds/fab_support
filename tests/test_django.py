@@ -1,16 +1,10 @@
 import os
-import pathlib
 import shutil
 import unittest
 
 from fabric.api import local, lcd
 
-from fab_support import set_stages, copy_null
-from tests.test_utils import remove_tree
-
-
-def clean_test_set_stages():
-    remove_tree(('demo_testhost486',))
+from tests.utils import verbose
 
 
 def clean_setup():
@@ -26,7 +20,7 @@ def clean_setup():
         raise Exception
     with lcd(my_path):
         try:
-            local('fab demo fab_support.django.kill_app')  # Remove any existing run time
+            local('fab fab_support.django.kill_app:demo')  # Remove any existing run time
         except SystemExit:
             pass
     # bodge to get .git file delete keeps giving a PermissionError after testing about a git file
@@ -46,7 +40,6 @@ def clean_setup():
 
 
 def clean_test_django():
-    clean_test_set_stages()
     clean_setup()
     print('Cleaned test_django extras')
 
@@ -77,29 +70,25 @@ class TestBasicFabSupport(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_set_stages(self):
-        # Can you call it
-        # Definition of different environments to deploy to
-        set_stages(globals(), {
-            'testhost': {
-                'comment': 'stage: Local build and serving from output directory',
-                'config_file': 'local_conf.py',
-                'destination': '',
-                'copy_method': copy_null,
-                'SITEURL': 'http://localhost:8000',
-                'PORT': 8000,
-            },
-        })
-        clean_test_set_stages()
-        # Now actually create a test environment and see if actually working
-        pathlib.Path("demo_testhost486").mkdir(exist_ok=True)
-        local(
-            'copy template_files\\demo_testhost486_fabfile.py demo_testhost486\\fabfile.py')  # TODO convert to windows and linux
-        with lcd('demo_testhost486'):
+    def test_list(self):
+        """Aim is to run fab --list making sure we are running fab in the correct test directory"""
+        with lcd('demo_django'):
+            # Check staging and fabfile are correct
             result = local('fab --list', capture=True)
-        print(result)
-        self.assertRegex(result, 'test486', 'Using test486 fabfile should have set up demo using set_stages')
-        self.assertRegex(result, 'test486_fab_file', 'The fabfile has defined a new task.')
+            if verbose():
+                print(result)
+            self.assertNotRegex(result, 'builds source and wheel', 'Should not be using main fabfile')
+            self.assertRegex(result, 'test_demo_django_fab_file', 'should be using local fab file with local task')
+            self.assertRegex(result, 'list_stages', 'Should have task list_stages')
+
+    def test_list_stages(self):
+        """Should have one and only demo when you list stages"""
+        with lcd('demo_django'):
+            # Check staging and fabfile are correct
+            result = local('fab fab_support.list_stages', capture=True)
+            if verbose():
+                print(result)
+            self.assertRegex(result, 'Demo version of Django', 'demo stage')
 
     def test_got_heroku_and_build(self):
         """
@@ -120,27 +109,9 @@ class TestBasicFabSupport(unittest.TestCase):
             self.assertRegex(result, 'demo', 'demo stage')
             self.assertRegex(result, 'test_demo_django_fab_file', 'The fabfile has defined a new task.')
             try:
-                local('fab demo fab_support.django.kill_app')  # Remove any existing run time
+                local('fab fab_support.django.kill_app:demo')  # Remove any existing run time
             except SystemExit:
                 pass
-            local('fab demo fab_support.django.create_newbuild')  # Build database from scratch
+            local('fab fab_support.django.create_newbuild:demo')  # Build database from scratch
+            # TODO add selenium to check that website is up
 
-    def test_got_local_fabfile(self):
-        with lcd('demo_django'):
-            result = local('fab --list', capture=True)
-        print(result)
-        self.assertNotRegex(result, 'test_fab_file', 'Should not be using test fabfile')
-        self.assertRegex(result, 'test_demo_django_fab_file',
-                         'Testing local django fab')  # should be using local fab file
-
-    # This was an experiment but couldn't make wsl run from local
-    # def test_got_wsl(self):
-    #     """Check that have wsl version of heroku and is logged in."""
-    #     result = local('bash ls', capture=True)
-    #     self.assertRegex(result, 'Apps\:', 'Make sure have heroku working and logged in')
-    #
-    # def test_got_wsl_heroku(self):
-    #     """Check that have wsl version of heroku and is logged in."""
-    #     result = local('bash /usr/bin/heroku status', capture=True)
-    #     self.assertRegex(result, 'Apps\:', 'Make sure have heroku working and logged in')
-    # local('fab demo fab_support.django.kill_app')  # By default don't let it run after test

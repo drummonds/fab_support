@@ -10,21 +10,18 @@ sys.path.append(str(root))
 
 # noinspection PyUnresolvedReferences
 import fab_support
-# noinspection PyUnresolvedReferences
-import fab_support.django as django
 
-# Definition of different environments to deploy to
 env['stages'] = {
     'demo': {
-        'comment': 'Demo version of Django to be deployed on Heroku',
-        'DJANGO_SETTINGS_MODULE': 'demo_django.settings',  # Essential as django doesn't know name of app
-        'HEROKU_APP_NAME': 'fab-support-test-demo',
-        'GIT_BRANCH': 'master'  # Local git branch to copy to Heroku
+        'comment': 'Simplest demo project',
+    },
+    'production': {
+        'comment': 'Production project tag:456 for regex match',
     },
     }
 
 
 @task
-def test_demo_django_fab_file():
+def test_demo_fab_file():
     """A test task to show correct file has been loaded"""
     pass
