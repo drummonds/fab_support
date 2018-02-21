@@ -89,7 +89,8 @@ DJANGO_SETTINGS_MODULE| {{app_name}} | Two sccopes config.settings.test or confi
 Name | Default | Comments
 -----|---------|---------
 HEROKU_APP_NAME | fab-support-test-app | Name must start with a letter and can only contain lowercase letters, numbers, and dashes. The production name should end in `prod` for additional protection.
-HEROKU_POSTGRES_TYPE | hobby-dev | free to 10K rows, hobby_basic allows to 10M rows 
+HEROKU_PROD_APP_NAME | fab-support-app-test | Used to identify where to copy the production data from 
+HEROKU_POSTGRES_TYPE | hobby-dev | free to 10K rows, hobby_basic allows to 10M rows but costs $9 a month 
 
 ## Features
 --------

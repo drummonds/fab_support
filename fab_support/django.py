@@ -7,7 +7,8 @@ import re
 import time
 
 DJANGO_SETTINGS_MODULE = 'production'  # Which settings configuration to use in Django
-HEROKU_APP_NAME = 'fab-support-test-app'
+HEROKU_APP_NAME = 'fab-support-app-test' # name of this stages Heroku app
+HEROKU_PROD_APP_NAME = 'fab-support-app-prod'  # Name of Heroku app which is production, ie source of data
 HEROKU_POSTGRES_TYPE = 'hobby-dev'
 SUPERUSER_NAME = 'superuser'  # TODO may want to get rid of defaults
 SUPERUSER_EMAIL = 'info@demo.com'
@@ -23,15 +24,14 @@ USES_CELERY = False
 # Local utilities
 ##################################################
 
-def remove_unused_db(env_prefix='uat'):
+def remove_unused_db(stage='uat'):
     """List all databases in use for app, find the main one and remove all the others"""
-    heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], env_prefix)
-    data = json.loads(local(f'heroku config --json --app {heroku_app}', capture=True))
+    data = json.loads(local(f'heroku config --json --app {HEROKU_APP_NAME}', capture=True))
     for k, v in data.items():
         # noinspection SpellCheckingInspection
         if k.find('HEROKU_POSTGRESQL_') == 0:
             if v != data['DATABASE_URL']:
-                local(f'heroku addons:destroy {k} --app {heroku_app} --confirm {heroku_app}')
+                local(f'heroku addons:destroy {k} --app {HEROKU_APP_NAME} --confirm {HEROKU_APP_NAME}')
 
 
 def default_db_colour(app_name):
@@ -92,8 +92,8 @@ def raw_update_app():
     if USES_CELERY:
         local(f'heroku ps:scale worker=1 -a {HEROKU_APP_NAME}')
     # Have used performance web=standard-1x and worker=standard-2x but adjusted app to used less memory
-    # local(f'heroku ps:resize web=standard-1x -a {heroku_app}')  # Resize web to be compatible with performance workers
-    # local(f'heroku ps:resize worker=standard-2x -a {heroku_app}')  # Resize workers
+    # local(f'heroku ps:resize web=standard-1x -a {HEROKU_APP_NAME}')  # Resize web to be compatible with performance workers
+    # local(f'heroku ps:resize worker=standard-2x -a {HEROKU_APP_NAME}')  # Resize workers
     # makemigrations should be run locally and the results checked into git
     local('heroku run "yes \'yes\' | python manage.py migrate"')  # Force deletion of stale content types
 
@@ -130,7 +130,7 @@ def _create_newbuild():
     # Add guvscale processing to allow celery queue to be at zero
     install_heroku_plugins(['heroku-cli-oauth', 'heroku-guvscale'])
     # start of configuring guvscale to autoscale
-    # local(f'heroku guvscale:getconfig --app {heroku_app}')
+    # local(f'heroku guvscale:getconfig --app {HEROKU_APP_NAME}')
     # set database backup schedule
     local(f'heroku pg:wait --app {HEROKU_APP_NAME}')  # It takes some time for DB so wait for it
     local(f'heroku pg:backups:schedule --at 04:00 --app {HEROKU_APP_NAME}')
@@ -152,8 +152,9 @@ def _create_newbuild():
 def get_global_environment_variables(stage):
     # Get a number of predefined environment variables from the staging system variables
     # and turn them into globals for use in this script
-    # TODO perhaps cconvert to another method of access
-    for global_env in ('HEROKU_APP_NAME', 'HEROKU_POSTGRES_TYPE', 'SUPERUSER_NAME', 'USES_CELERY',
+    # TODO perhaps convert to another method of access
+    for global_env in ('HEROKU_APP_NAME', 'HEROKU_PROD_APP_NAME', 'HEROKU_POSTGRES_TYPE',
+                       'SUPERUSER_NAME', 'USES_CELERY',
                        'SUPERUSER_EMAIL', 'SUPERUSER_PASSWORD',
                        'GIT_BRANCH', 'GIT_PUSH', 'GIT_PUSH_DIR',
                        'DJANGO_SETTINGS_MODULE'):
@@ -198,9 +199,9 @@ def build_uat():
 @task
 def build_app(stage='uat'):
     """Build a test environment. Default is uat.
-    So fab build_app  is equivalent to fab build_app:uat  and to fab build_app:env_prefix=uat
+    So fab build_app  is equivalent to fab build_app:uat  and to fab build_app:stage=uat
     so can build a test branch with:
-        fab build_app:env_prefix=test"""
+        fab build_app:stage=test"""
     start_time = time.time()
     get_global_environment_variables(stage)
     try:
@@ -211,7 +212,7 @@ def build_app(stage='uat'):
         else:
             raise Exception('Must stop if an error when deleting a production database.')
     _create_newbuild()
-    local(f'fab transfer_database_from_production:{env_prefix}')
+    local(f'fab transfer_database_from_production:{stage}')
     # makemigrations should be run locally and the results checked into git
     # Need to migrate the old database schema from the master production database
     local('heroku run "yes \'yes\' | python manage.py migrate"')  # Force deletion of stale content types
@@ -224,9 +225,9 @@ def build_app(stage='uat'):
 @task
 def create_new_db(stage='uat'):
     """Just creates a new database for this instance."""
-    heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], stage)
+    HEROKU_APP_NAME = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], stage)
     # Put the heroku app in maintenance move
-    m = local('heroku addons:create heroku-postgresql:hobby-basic --app {0}'.format(heroku_app), capture=True)
+    m = local('heroku addons:create heroku-postgresql:hobby-basic --app {0}'.format(HEROKU_APP_NAME), capture=True)
     m1 = m.replace('\n',' ')  # Convert to a single string
     print(f'>>>{m1}<<<')
     found = re.search('Created\w*(.*)\w*as\w*(.*)\w* Use', m1)
@@ -241,24 +242,22 @@ def _transfer_database_from_production(stage='test', clean=True):
     """This is usually used for making a copy of the production database for a UAT staging
     or test environment.  It can also be used to upgrade the production environment from one
     database plan to the next. """
-    heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], stage)
-    heroku_app_prod = '{0}-prod'.format(os.environ['HEROKU_PREFIX'])
     # Put the heroku app in maintenance move
     try:
-        local('heroku maintenance:on --app {} '.format(heroku_app))
+        local('heroku maintenance:on --app {} '.format(HEROKU_APP_NAME))
         colour, db_name = create_new_db(stage)  # color is ?
         # Don't need to scale workers down as not using eg heroku ps:scale worker=0
-        local(f'heroku pg:copy {heroku_app_prod}::DATABASE_URL {colour} --app {heroku_app} --confirm {heroku_app}')
+        local(f'heroku pg:copy {HEROKU_PROD_APP_NAME}::DATABASE_URL {colour} --app {HEROKU_APP_NAME} --confirm {HEROKU_APP_NAME}')
         local(f'heroku pg:promote {colour}')
         if clean:
             remove_unused_db(stage)
     finally:
-        local('heroku maintenance:off --app {} '.format(heroku_app))
+        local('heroku maintenance:off --app {} '.format(HEROKU_APP_NAME))
 
 
 @task
-def transfer_database_from_production(env_prefix='test', clean=True):
-    _transfer_database_from_production(env_prefix, clean)
+def transfer_database_from_production(stage='test', clean=True):
+    _transfer_database_from_production(stage, clean)
 
 
 @task

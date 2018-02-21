@@ -23,9 +23,10 @@ test_requirements = [
     # TODO: put package test requirements here
 ]
 
+# TODO copy version from __init__ or vice versa can also do author and author email
 setup(
     name='fab_support',
-    version='0.1.2',
+    version='0.1.3',
     description="Code to implement staging in Fabric and recipes for using that staging for pelican deployments and Django to Heroku.",
     long_description=readme + '\n\n' + history,
 
