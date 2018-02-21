@@ -225,10 +225,9 @@ def build_app(stage='uat'):
 @task
 def create_new_db(stage='uat'):
     """Just creates a new database for this instance."""
-    HEROKU_APP_NAME = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], stage)
     # Put the heroku app in maintenance move
-    m = local('heroku addons:create heroku-postgresql:hobby-basic --app {0}'.format(HEROKU_APP_NAME), capture=True)
-    m1 = m.replace('\n',' ')  # Convert to a single string
+    m = local(f'heroku addons:create heroku-postgresql:{HEROKU_POSTGRES_TYPE} --app {HEROKU_APP_NAME}', capture=True)
+    m1 = m.replace('\n', ' ')  # Convert to a single string
     print(f'>>>{m1}<<<')
     found = re.search('Created\w*(.*)\w*as\w*(.*)\w* Use', m1)
     db_name = found.group(1)
