@@ -3,6 +3,7 @@ from fabric.api import env, local, task, lcd
 from fabric.operations import require
 import json
 import os
+import re
 import time
 
 DJANGO_SETTINGS_MODULE = 'production'  # Which settings configuration to use in Django
@@ -219,21 +220,37 @@ def build_app(stage='uat'):
     print(f'Run time = {runtime} Completed at: {dt.datetime.now()}')
 
 
-def _transfer_database_from_production(env_prefix='test', clean=True):
+@task
+def create_new_db(stage='uat'):
+    """Just creates a new database for this instance."""
+    heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], stage)
+    # Put the heroku app in maintenance move
+    m = local('heroku addons:create heroku-postgresql:hobby-basic --app {0}'.format(heroku_app), capture=True)
+    m1 = m.replace('\n',' ')  # Convert to a single string
+    print(f'>>>{m1}<<<')
+    found = re.search('Created\w*(.*)\w*as\w*(.*)\w* Use', m1)
+    db_name = found.group(1)
+    colour = found.group(2)
+    print(f'DB colour = {colour}, {db_name}')
+    local('heroku pg:wait')  # It takes some time for DB so wait for it
+    return colour, db_name
+
+
+def _transfer_database_from_production(stage='test', clean=True):
     """This is usually used for making a copy of the production database for a UAT staging
     or test environment.  It can also be used to upgrade the production environment from one
     database plan to the next. """
-    heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], env_prefix)
+    heroku_app = '{0}-{1}'.format(os.environ['HEROKU_PREFIX'], stage)
     heroku_app_prod = '{0}-prod'.format(os.environ['HEROKU_PREFIX'])
     # Put the heroku app in maintenance move
     try:
         local('heroku maintenance:on --app {} '.format(heroku_app))
-        colour, db_name = create_new_db(env_prefix)  # color is ?
+        colour, db_name = create_new_db(stage)  # color is ?
         # Don't need to scale workers down as not using eg heroku ps:scale worker=0
         local(f'heroku pg:copy {heroku_app_prod}::DATABASE_URL {colour} --app {heroku_app} --confirm {heroku_app}')
         local(f'heroku pg:promote {colour}')
         if clean:
-            remove_unused_db(env_prefix)
+            remove_unused_db(stage)
     finally:
         local('heroku maintenance:off --app {} '.format(heroku_app))
 
@@ -241,3 +258,25 @@ def _transfer_database_from_production(env_prefix='test', clean=True):
 @task
 def transfer_database_from_production(env_prefix='test', clean=True):
     _transfer_database_from_production(env_prefix, clean)
+
+
+@task
+def list_stages():
+    """This is put here to test the exact same code in django as in set_stages.  In  one it seems to work
+    and another to fail."""
+    print('Hi from list_stages in django')
+    try:
+        stages = env['stages']
+        print('List of stages')
+        print(stages)
+        for stage_name, stage in stages.items():
+            try:
+                comment = stage['comment']
+            except KeyError:
+                comment = ''
+            print(f'{stage_name} - {comment}')
+    except KeyError:
+        for k, v in env:
+            if k.lower() == 'stages':
+                print("env['{f}'] has been set but should probably be 'stages'")
+        print("env['stages'] has not been set.")
