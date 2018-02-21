@@ -1,13 +1,9 @@
 import os
-import pathlib
-import shutil
 import unittest
 
 from fabric.api import local, lcd
 
-from fab_support import set_stages, copy_null
-from tests.test_utils import remove_tree
-
+from tests.utils import verbose
 
 
 def clean_setup_postgres():
@@ -22,7 +18,7 @@ def clean_setup_postgres():
     with lcd(my_path):
         for stage in ('test', 'uat', 'prod'):
             try:
-                local(f'fab {stage} fab_support.django.kill_app')  # Remove any existing run time
+                local(f'fab fab_support.django.kill_app:{stage}')  # Remove any existing run time
             except SystemExit:
                 pass
 
@@ -34,6 +30,28 @@ class TestDjangoPostgresSupport(unittest.TestCase):
 
     def tearDown(self):
         pass
+
+    def test_list(self):
+        """Aim is to run fab --list making sure we are running fab in the correct test directory"""
+        with lcd('demo_django_postgres'):
+            # Check staging and fabfile are correct
+            result = local('fab --list', capture=True)
+            if verbose():
+                print(result)
+            self.assertNotRegex(result, 'builds source and wheel', 'Should not be using main fabfile')
+            self.assertRegex(result, 'test_django_postgres_fab_file', 'should be using local fab file with local task')
+            self.assertRegex(result, 'list_stages', 'Should have task list_stages')
+
+    def test_list_stages(self):
+        """Should have one and only demo when you list stages"""
+        with lcd('demo_django_postgres'):
+            # Check staging and fabfile are correct
+            result = local('fab fab_support.list_stages', capture=True)
+            if verbose():
+                print(result)
+            self.assertRegex(result, 'Test version of Django', 'demo stage')
+            self.assertRegex(result, 'uat', 'UAT stage')
+            self.assertRegex(result, 'prod', 'production stage')
 
     def test_django_postgres(self):
         """
@@ -58,22 +76,5 @@ class TestDjangoPostgresSupport(unittest.TestCase):
         The Heroku test version that is spun up is a test version at zero cost.
         """
         with lcd('demo_django_postgres'):
-            # Check staging and fabfile are correct
-            result = local('fab --list', capture=True)
-            self.assertRegex(result, 'test', 'test stage')
-            self.assertRegex(result, 'uat', 'UAT stage')
-            self.assertRegex(result, 'prod', 'production stage')
-            self.assertRegex(result, 'test_django_postgres_fab_file', 'The fabfile has defined a new task.')
-            try:
-                local('fab test fab_support.django.kill_app')  # Remove any existing run time
-                local('fab uat fab_support.django.kill_app')  # Remove any existing run time
-                local('fab prod fab_support.django.kill_app')  # Remove any existing run time
-            except SystemExit:
-                pass
-            local('fab test fab_support.django.create_newbuild')  # Build database from scratch
+            local('fab fab_support.django.create_newbuild:test')  # Build database from scratch
             # local('fab demo fab_support.django.kill_app')  # By default don't let it run after test
-
-
-
-
-

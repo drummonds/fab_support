@@ -29,6 +29,7 @@ urlpatterns = [
         view=HomeView.as_view(),
         name='mydata'
      ),
+    url(r'^accounts/', include('allauth.urls')),
     # url(r'^about/$', TemplateView.as_view(template_name='pages/about.html'), name='about'),
 
     # Django Admin, use {% url 'admin:index' %}

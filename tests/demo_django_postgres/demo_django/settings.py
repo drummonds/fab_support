@@ -54,13 +54,20 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sites',
     'django.contrib.staticfiles',
 
     'django_tables2',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.windowslive',
 
     'my_app.apps.MyAppConfig',
 
 ]
+
+SITE_ID = 1  # for django allauth
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -88,6 +95,13 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+# AUTHENTICATION CONFIGURATION
+# ------------------------------------------------------------------------------
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 WSGI_APPLICATION = 'demo_django.wsgi.application'

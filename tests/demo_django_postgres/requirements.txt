@@ -1,5 +1,6 @@
 django==2.0.2
 psycopg2-binary==2.7.4  # Without this will crash?
+django-allauth==0.35.0 # sign in niceties
 django-tables2==1.19.0 # Demo table format
 
 # WSGI Handler

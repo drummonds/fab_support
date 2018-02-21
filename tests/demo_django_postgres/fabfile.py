@@ -1,4 +1,4 @@
-from fabric.api import task
+from fabric.api import task, env
 
 # Need to modify path so fab_support is found
 # This is only needed to run test fabfiles in a test directory
@@ -11,10 +11,10 @@ sys.path.append(str(root))
 # noinspection PyUnresolvedReferences
 import fab_support
 # noinspection PyUnresolvedReferences
-from fab_support.django import kill_app, build_app  # Can call directly
+import fab_support.django as django
 
 # Definition of different environments to deploy to
-set_stages(globals(), {
+env['stages'] = {
     'test': {
         'comment': 'Test version of Django to be deployed on Heroku',
         'DJANGO_SETTINGS_MODULE': 'demo_django.settings',  # Essential as django doesn't know name of app
@@ -39,7 +39,7 @@ set_stages(globals(), {
         'GIT_PUSH_DIR': '../..',
         'GIT_BRANCH': 'master'
     },
-})
+}
 
 
 @task
