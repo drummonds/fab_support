@@ -6,6 +6,8 @@ import os
 import re
 import time
 
+from .utils import repeat_run_local
+
 DJANGO_SETTINGS_MODULE = 'production'  # Which settings configuration to use in Django
 HEROKU_APP_NAME = 'fab-support-app-test' # name of this stages Heroku app
 HEROKU_PROD_APP_NAME = 'fab-support-app-prod'  # Name of Heroku app which is production, ie source of data
@@ -132,8 +134,10 @@ def _create_newbuild():
     # start of configuring guvscale to autoscale
     # local(f'heroku guvscale:getconfig --app {HEROKU_APP_NAME}')
     # set database backup schedule
-    local(f'heroku pg:wait --app {HEROKU_APP_NAME}')  # It takes some time for DB so wait for it
-    local(f'heroku pg:backups:schedule --at 04:00 --app {HEROKU_APP_NAME}')
+    repeat_run_local(f'heroku pg:wait --app {HEROKU_APP_NAME}')  # It takes some time for DB so wait for it
+    # When wait returns the database is not necessarily completely finished preparing itself.  So the next
+    # command could fail (and did on testing on v0.1.6)
+    repeat_run_local(f'heroku pg:backups:schedule --at 04:00 --app {HEROKU_APP_NAME}')
     # Already promoted as new local('heroku pg:promote DATABASE_URL --app my-app-prod')
     # Leaving out and aws and reddis
     raw_update_app()

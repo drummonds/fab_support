@@ -6,6 +6,7 @@ import re
 from tests.test_utils import remove_tree
 from tests.test_django import clean_test_django
 from tests.test_django_postgres import clean_setup_postgres
+from tests.test_pelican import clean_test_pelican
 
 
 @task
@@ -14,10 +15,9 @@ def clean():
     clean_build()
     clean_pyc()
     clean_test()
-    clean_test_pelican()
     clean_test_django()
     clean_setup_postgres()
-
+    clean_test_pelican()
 
 
 def find_and_remove_tree(path, match):
@@ -54,11 +54,6 @@ def clean_build():
     remove_tree(('build/', 'dist/', '.eggs/'))
     find_and_remove_tree('.', '.egg-info$')
     find_and_remove_file('.', '.egg$')
-
-
-def clean_test_pelican():
-    """remove build artifacts"""
-    remove_tree(('tests/pelican',))
 
 
 def clean_pyc():
