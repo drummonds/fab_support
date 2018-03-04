@@ -1,0 +1,275 @@
+{
+  "addons": [
+    {
+      "actions": [
+        {
+          "id": "bacfe275-4e70-48db-9a9c-9ed8ab23904e",
+          "label": "Settings",
+          "action": "settings",
+          "url": null,
+          "requires_owner": null
+        },
+        {
+          "id": "163fef7e-55d9-45bc-850c-46baeae4a48a",
+          "label": "All Events",
+          "action": "events",
+          "url": null,
+          "requires_owner": null
+        },
+        {
+          "id": "e9df5bb5-6ee1-4075-a704-d2c054184ee1",
+          "label": "Dashboard",
+          "action": "dashboard",
+          "url": null,
+          "requires_owner": null
+        }
+      ],
+      "config_vars": [
+        "PAPERTRAIL_API_TOKEN"
+      ],
+      "created_at": "2018-03-04T12:20:18Z",
+      "id": "1c17992b-8389-4542-9d80-7d5ddfccc792",
+      "name": "papertrail-objective-84239",
+      "addon_service": {
+        "id": "f6f28cb5-78ad-4ec7-896d-16462b8202fd",
+        "name": "papertrail"
+      },
+      "plan": {
+        "id": "75e5e5d9-e71c-4693-818f-db1de34d761b",
+        "name": "papertrail:choklad"
+      },
+      "app": {
+        "id": "e4bdb518-1ffe-4933-b7c8-afe5ed7ab1f5",
+        "name": "fab-support-test-postgres-uat"
+      },
+      "provider_id": "1653858031",
+      "state": "provisioned",
+      "updated_at": "2018-03-04T12:20:19Z",
+      "web_url": "https://addons-sso.heroku.com/apps/e4bdb518-1ffe-4933-b7c8-afe5ed7ab1f5/addons/1c17992b-8389-4542-9d80-7d5ddfccc792",
+      "billed_price": {
+        "cents": 0,
+        "unit": "month"
+      }
+    },
+    {
+      "actions": [
+        {
+          "id": "215e501f-ad8d-41dc-9e16-b5d4ee61ff2b",
+          "label": "Create follower",
+          "action": null,
+          "url": "https://data.heroku.com/datastore/:resource_uuid?heroku_action=create_follower",
+          "requires_owner": true
+        },
+        {
+          "id": "194ea46d-93c7-4b74-bd77-fea1098b1f63",
+          "label": "Create Dataclip",
+          "action": null,
+          "url": "http://dataclips.heroku.com/clips/new?heroku_resource_id=:resource_id&heroku_id=:resource_uuid",
+          "requires_owner": null
+        },
+        {
+          "id": "c198ceb3-0be2-4276-b4f8-80a029b9d243",
+          "label": "Upgrade instructions",
+          "action": null,
+          "url": "https://devcenter.heroku.com/articles/upgrading-heroku-postgres-databases",
+          "requires_owner": null
+        },
+        {
+          "id": "3d0cc2b0-9523-4c16-8290-7c11297bbfb7",
+          "label": "View expensive queries",
+          "action": null,
+          "url": "https://data.heroku.com/datastore/:resource_uuid?heroku_action=view_expensive_queries",
+          "requires_owner": null
+        }
+      ],
+      "config_vars": [
+        "DATABASE_URL"
+      ],
+      "created_at": "2018-03-04T12:20:15Z",
+      "id": "5f554383-c4f3-4ade-ae69-aaff631c3340",
+      "name": "postgresql-symmetrical-40427",
+      "addon_service": {
+        "id": "6c67493d-8fc2-4cd4-9161-4f1ec11cbe69",
+        "name": "heroku-postgresql"
+      },
+      "plan": {
+        "id": "112f476d-536b-40a9-9d47-ce346920755d",
+        "name": "heroku-postgresql:standard-0"
+      },
+      "app": {
+        "id": "e4bdb518-1ffe-4933-b7c8-afe5ed7ab1f5",
+        "name": "fab-support-test-postgres-uat"
+      },
+      "provider_id": "resource23044623@heroku.com",
+      "state": "provisioned",
+      "updated_at": "2018-03-04T12:23:31Z",
+      "web_url": "https://addons-sso.heroku.com/apps/e4bdb518-1ffe-4933-b7c8-afe5ed7ab1f5/addons/5f554383-c4f3-4ade-ae69-aaff631c3340",
+      "billed_price": {
+        "cents": 5000,
+        "unit": "month"
+      }
+    },
+    {
+      "actions": [
+        {
+          "id": "215e501f-ad8d-41dc-9e16-b5d4ee61ff2b",
+          "label": "Create follower",
+          "action": null,
+          "url": "https://data.heroku.com/datastore/:resource_uuid?heroku_action=create_follower",
+          "requires_owner": true
+        },
+        {
+          "id": "194ea46d-93c7-4b74-bd77-fea1098b1f63",
+          "label": "Create Dataclip",
+          "action": null,
+          "url": "http://dataclips.heroku.com/clips/new?heroku_resource_id=:resource_id&heroku_id=:resource_uuid",
+          "requires_owner": null
+        },
+        {
+          "id": "c198ceb3-0be2-4276-b4f8-80a029b9d243",
+          "label": "Upgrade instructions",
+          "action": null,
+          "url": "https://devcenter.heroku.com/articles/upgrading-heroku-postgres-databases",
+          "requires_owner": null
+        },
+        {
+          "id": "3d0cc2b0-9523-4c16-8290-7c11297bbfb7",
+          "label": "View expensive queries",
+          "action": null,
+          "url": "https://data.heroku.com/datastore/:resource_uuid?heroku_action=view_expensive_queries",
+          "requires_owner": null
+        }
+      ],
+      "config_vars": [
+        "HEROKU_POSTGRESQL_PURPLE_URL"
+      ],
+      "created_at": "2018-03-04T12:25:20Z",
+      "id": "6e753610-9f17-4e10-8db2-a53cd56a353a",
+      "name": "postgresql-tapered-42805",
+      "addon_service": {
+        "id": "6c67493d-8fc2-4cd4-9161-4f1ec11cbe69",
+        "name": "heroku-postgresql"
+      },
+      "plan": {
+        "id": "112f476d-536b-40a9-9d47-ce346920755d",
+        "name": "heroku-postgresql:standard-0"
+      },
+      "app": {
+        "id": "e4bdb518-1ffe-4933-b7c8-afe5ed7ab1f5",
+        "name": "fab-support-test-postgres-uat"
+      },
+      "provider_id": "resource23044652@heroku.com",
+      "state": "provisioned",
+      "updated_at": "2018-03-04T12:30:33Z",
+      "web_url": "https://addons-sso.heroku.com/apps/e4bdb518-1ffe-4933-b7c8-afe5ed7ab1f5/addons/6e753610-9f17-4e10-8db2-a53cd56a353a",
+      "billed_price": {
+        "cents": 5000,
+        "unit": "month"
+      }
+    },
+    {
+      "actions": [],
+      "config_vars": [
+        "CLOUDAMQP_APIKEY",
+        "CLOUDAMQP_URL"
+      ],
+      "created_at": "2018-03-04T12:20:17Z",
+      "id": "fa871e9b-71d6-4e1b-b87c-1651b8e3bb50",
+      "name": "cloudamqp-perpendicular-67406",
+      "addon_service": {
+        "id": "44c1c8fd-bd15-45c3-890b-27d91bbff316",
+        "name": "cloudamqp"
+      },
+      "plan": {
+        "id": "fd6dbbaa-d48b-46c4-9013-7d23a2c88db1",
+        "name": "cloudamqp:lemur"
+      },
+      "app": {
+        "id": "e4bdb518-1ffe-4933-b7c8-afe5ed7ab1f5",
+        "name": "fab-support-test-postgres-uat"
+      },
+      "provider_id": "31277fe1-d8c6-4d9e-8bb8-0c36ccce5793",
+      "state": "provisioned",
+      "updated_at": "2018-03-04T12:20:17Z",
+      "web_url": "https://addons-sso.heroku.com/apps/e4bdb518-1ffe-4933-b7c8-afe5ed7ab1f5/addons/fa871e9b-71d6-4e1b-b87c-1651b8e3bb50",
+      "billed_price": {
+        "cents": 0,
+        "unit": "month"
+      }
+    }
+  ],
+  "app": {
+    "acm": false,
+    "archived_at": null,
+    "buildpack_provided_description": "Python",
+    "build_stack": {
+      "id": "ee582d3c-717d-4a57-ba5f-8b3a39f3a817",
+      "name": "heroku-16"
+    },
+    "created_at": "2018-03-04T12:20:13Z",
+    "id": "e4bdb518-1ffe-4933-b7c8-afe5ed7ab1f5",
+    "git_url": "https://git.heroku.com/fab-support-test-postgres-uat.git",
+    "maintenance": false,
+    "name": "fab-support-test-postgres-uat",
+    "owner": {
+      "email": "hum3@drummond.info",
+      "id": "334534c0-ef32-4726-9362-48fb91e9d1a2"
+    },
+    "region": {
+      "id": "ed30241c-ed8c-4bb6-9714-61953675d0b4",
+      "name": "eu"
+    },
+    "organization": null,
+    "team": null,
+    "space": null,
+    "released_at": "2018-03-04T12:30:33Z",
+    "repo_size": 24558,
+    "slug_size": 57569569,
+    "stack": {
+      "id": "ee582d3c-717d-4a57-ba5f-8b3a39f3a817",
+      "name": "heroku-16"
+    },
+    "updated_at": "2018-03-04T12:30:33Z",
+    "web_url": "https://fab-support-test-postgres-uat.herokuapp.com/"
+  },
+  "dynos": [
+    {
+      "attach_url": null,
+      "command": "gunicorn demo_django.wsgi:application",
+      "created_at": "2018-03-04T12:30:44Z",
+      "id": "4bcf0566-4140-4106-91d1-133d6c7944cf",
+      "name": "web.1",
+      "app": {
+        "id": "e4bdb518-1ffe-4933-b7c8-afe5ed7ab1f5",
+        "name": "fab-support-test-postgres-uat"
+      },
+      "release": {
+        "id": "cace94b2-6bab-4f50-aed1-ff5ba6d110c5",
+        "version": 10
+      },
+      "size": "Free",
+      "state": "up",
+      "type": "web",
+      "updated_at": "2018-03-04T12:30:44Z"
+    }
+  ],
+  "collaborators": [
+    {
+      "created_at": "2018-03-04T12:20:13Z",
+      "id": "334534c0-ef32-4726-9362-48fb91e9d1a2",
+      "updated_at": "2018-03-04T12:20:13Z",
+      "user": {
+        "email": "hum3@drummond.info",
+        "federated": false,
+        "id": "334534c0-ef32-4726-9362-48fb91e9d1a2"
+      },
+      "app": {
+        "id": "e4bdb518-1ffe-4933-b7c8-afe5ed7ab1f5",
+        "name": "fab-support-test-postgres-uat"
+      },
+      "role": "owner"
+    }
+  ],
+  "pipeline_coupling": null,
+  "pipeline": null
+}

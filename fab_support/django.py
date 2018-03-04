@@ -4,7 +4,9 @@ import json
 import os
 import re
 import time
+from time import sleep
 
+from .heroku_utils import first_colour_database
 from .utils import repeat_run_local, FabricSupportException
 
 # See readme for documentation
@@ -234,17 +236,12 @@ def build_app(stage='uat'):
 
 
 def _create_new_db():
-    """Just creates a new database for this instance."""
+    """Just creates an extra new database for this instance."""
     # Put the heroku app in maintenance move
     m = local(f'heroku addons:create heroku-postgresql:{HEROKU_POSTGRES_TYPE} --app {HEROKU_APP_NAME}', capture=True)
-    m1 = m.replace('\n', ' ')  # Convert to a single string
-    print(f'>>>{m1}<<<')
-    found = re.search('Created\w*(.*)\w*as\w*(.*)\w* Use', m1)
-    db_name = found.group(1)
-    colour = found.group(2)
-    print(f'DB colour = {colour}, {db_name}')
-    local('heroku pg:wait')  # It takes some time for DB so wait for it
-    return colour, db_name
+    repeat_run_local('heroku pg:wait')  # It takes some time for DB so wait for it
+    # There should now be 2 database
+    return first_colour_database(app=HEROKU_APP_NAME)
 
 
 @task
@@ -261,7 +258,7 @@ def _transfer_database_from_production(stage='test', clean=True):
     """
     try:
         local('heroku maintenance:on --app {} '.format(HEROKU_APP_NAME))
-        colour, db_name = create_new_db(stage)  # color is ?
+        db_name, colour = create_new_db(stage)  # colour is ?
         # Don't need to scale workers down as not using eg heroku ps:scale worker=0
         local(
             f'heroku pg:copy {HEROKU_PROD_APP_NAME}::DATABASE_URL {colour} --app {HEROKU_APP_NAME} --confirm {HEROKU_APP_NAME}')

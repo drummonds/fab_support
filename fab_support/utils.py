@@ -19,7 +19,7 @@ def copy_file(source, destination):
     copy_tree(source, destination)  # from one file location to another
 
 
-def repeat_run_local(command, repeats=3, interval=5):
+def repeat_run_local(command, repeats=5, interval=15):
     """
     When your run some commands they fail.  This failure might actually be due to a timing issue. For instance
     trying :
@@ -49,7 +49,9 @@ def repeat_run_local(command, repeats=3, interval=5):
                 local(command)
                 return  # All good here
             except FabricSupportException:
-                pass
+                print(f'  Sleep and retry command attempt {i+1}')
         sleep(interval)
     # Now we have exhausted the retries and really need to bring this to a quick stop
     sys.exit(f"Retried '{command}' {repeats} times and still failed")
+
+

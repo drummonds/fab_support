@@ -30,6 +30,7 @@ env['stages'] = {
         'HEROKU_APP_NAME': 'fab-support-test-postgres-uat',
         'HEROKU_PROD_APP_NAME' : 'fab-support-test-postgres-prod',
         'HEROKU_OLD_PROD_APP_NAME' : 'fab-support-test-p-old-prod',
+        'HEROKU_POSTGRES_TYPE': 'standard-0',  # Replicate production but expensive
         'GIT_PUSH': 'git subtree push --prefix tests/demo_django_postgres heroku master',
         'GIT_PUSH_DIR': '../..',
         'GIT_BRANCH': 'master'
@@ -40,6 +41,7 @@ env['stages'] = {
         'HEROKU_APP_NAME': 'fab-support-test-postgres-prod',
         'HEROKU_PROD_APP_NAME' : 'fab-support-test-postgres-prod',
         'HEROKU_OLD_PROD_APP_NAME' : 'fab-support-test-p-old-prod',
+        'HEROKU_POSTGRES_TYPE': 'standard-0',  # Replicate production but expensive
         'GIT_PUSH': 'git subtree push --prefix tests/demo_django_postgres heroku master',
         'GIT_PUSH_DIR': '../..',
         'GIT_BRANCH': 'master'
