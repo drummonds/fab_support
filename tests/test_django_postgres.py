@@ -1,9 +1,12 @@
 import os
 import unittest
 
-from fabric.api import local, lcd
+from fabric.api import local, lcd, env
 
 from tests.utils import verbose
+
+from tests.demo_django_postgres import fabfile  # This is to load the env in the call fabfile
+#  This can get confusing as there are two levels of fab file being used.
 
 
 def clean_setup_postgres():
@@ -16,11 +19,19 @@ def clean_setup_postgres():
     else:
         raise Exception
     with lcd(my_path):
-        for stage in ('test', 'uat', 'prod'):
+        for stage in ('test', 'uat', 'prod',):
             try:
                 local(f'fab fab_support.django.kill_app:{stage}')  # Remove any existing run time
             except SystemExit:
                 pass
+        # Get rid of the other environments that may have been build
+        for stage, env_name in (('uat', 'HEROKU_OLD_PROD_APP_NAME',), ):
+            try:
+                app = env['stages'][stage][env_name]
+                local(f'heroku destroy {app} --confirm {app}')
+            except SystemExit:
+                pass
+
 
 
 class TestDjangoPostgresSupport(unittest.TestCase):
@@ -64,14 +75,11 @@ class TestDjangoPostgresSupport(unittest.TestCase):
 
         We will follow the following story:
 
-        Build test with no data
-        Build test with test data
         New Build UAT with new production data
         Promote UAT to production
         Build UAT with production data
         Update production
         Promote UAT to production
-        Build test with production data
 
 
         The Heroku test version that is spun up is a test version at zero cost.
@@ -79,3 +87,20 @@ class TestDjangoPostgresSupport(unittest.TestCase):
         with lcd('demo_django_postgres'):
             local('fab fab_support.django.create_newbuild:test')  # Build database from scratch
             # local('fab demo fab_support.django.kill_app')  # By default don't let it run after test
+
+    def test_typical_progression(self):
+        """
+        Build UAT
+        Promote to Production
+        build a second UAT
+        Copy the database from Production
+        Promote UAT to production
+        remove old production  #  once you are comfortable with new production
+        """
+        with lcd('demo_django_postgres'):
+            local('fab fab_support.django.create_newbuild:uat')  # Build database from scratch
+            local('fab fab_support.django.promote_uat')  # Build database from scratch
+            local('fab fab_support.django.build_app:uat')  # Build database from scratch
+            local('fab fab_support.django.promote_uat')  # Build database from scratch
+            # for stage in ['uat', 'prod', 'old_prod']:
+            #     local(f'fab demo fab_support.django.kill_app:{stage}')  # By default don't let it run after test

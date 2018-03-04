@@ -5,7 +5,7 @@
 
 from setuptools import setup, find_packages
 
-with open('README.markdown') as readme_file:
+with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 with open('HISTORY.rst') as history_file:
@@ -26,7 +26,7 @@ test_requirements = [
 # TODO copy version from __init__ or vice versa can also do author and author email
 setup(
     name='fab-support',
-    version='0.1.7',
+    version='0.1.8',
     description="Implement staging in Fabric and recipes for pelican to [local, s3] and Django to Heroku.",
     long_description=readme + '\n\n' + history,
 
