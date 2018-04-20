@@ -92,3 +92,9 @@ def release():
     clean()
     local('python setup.py sdist upload')
     local('python setup.py bdist_wheel upload')
+
+@task
+def make_docs():
+    """Create documentation"""
+    # Another to upload
+    pass

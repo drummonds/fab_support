@@ -65,3 +65,6 @@ target/
 
 # PyCharm
 .idea
+
+# My testing area
+playpen
