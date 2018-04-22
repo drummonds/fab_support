@@ -23,15 +23,18 @@ test_requirements = [
     # TODO: put package test requirements here
 ]
 
+# Get version variables
+exec(open('fab_support/_version.py').read())
+
 # TODO copy version from __init__ or vice versa can also do author and author email
 setup(
     name='fab-support',
-    version='0.1.9',
+    version=__version__,
     description="Implement staging in Fabric and recipes for pelican to [local, s3] and Django to Heroku.",
     long_description=readme + '\n\n' + history,
 
-    author="Humphrey Drummond",
-    author_email='hum3@drummond.info',
+    author=__author__,
+    author_email=__email__,
     url='https://github.com/drummonds/fab_support',
     packages=find_packages(include=['fab_support']),
     include_package_data=True,

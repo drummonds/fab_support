@@ -26,12 +26,35 @@ So they might go from:
 
 test -> uat -> production -> old production
 
-There are all different versions of the same application and may be active at the same time.
+.. figure:: 2018-04-21staging.svg
+    :alt: Use of staging
 
-I have create a fab-support.py which does the heavy lifting.  In the root fabfile create a dictionary like this which
+    Different stages of a single project
+
+
+I have create a fab-support.py which does the heavy lifting of creating each environment.  The aim is that this should
+be hardly any more than the use of fabric and much simpler than the use of a full featured build Salt_ or Ansible_.  This
+is really only if you fit one of the use cases.  Like Ansible this is a simple single master deployment system.
+
+
+.. _Salt: https://saltstack.com/
+.. _Ansible: https://www.ansible.com/
+
+Suitable use cases:
+
+    - Deployment of Pelican static website
+        - Deployment to local file system for use with a file server
+        - Deployment to local for a file based browser
+        - Deployment to S3
+
+    - Simple Django to Heroku where you have at a minimum two stages eg UAT and Production.
+        - Copes with Postgres database
+        - Static data in AWS
+
+In the root fabfile create a dictionary like this which
 documents how to deploy each stage:
 
-.. code-block::
+.. code-block:: python
 
     from fabric.api import env
 
@@ -74,40 +97,10 @@ The Django configuration includes the following features:
     - Celery support with aqmp
     - Log trapping support with Papertrail
 
-Settings
-========
-These are the variables that are set in the .env and are carried through to the development environments
-
-Django settings
----------------
-
-====================== =============  ===============================================================
-Name                   Default        Comments
-====================== =============  ===============================================================
-DJANGO_SETTINGS_MODULE {{app_name}}   Two sccopes config.settings.test or config.settings.production,
-====================== =============  ===============================================================
-
-
-# Heroku
-
-======================== ========================  ===============================================================
-Name                     Default                   Comments
-======================== ========================  ===============================================================
-HEROKU_APP_NAME          fab-support-test-app      Name must start with a letter and can only contain lowercase letters, numbers, and dashes. The production name should end in `prod` for additional protection.
-HEROKU_PROD_APP_NAME     fab-support-app-prod      Used to identify where to copy the production data from
-HEROKU_OLD_PROD_APP_NAME fab-support-app-old_prod  Name of production when promote uat to prod
-HEROKU_POSTGRES_TYPE     hobby-dev                 free to 10K rows, hobby-basic allows to 10M rows but costs $9 a month
-PRODUCTION_URL           *''*                      This is where the production URL should be hosted. empty string if no remote URL
-======================== ========================  ===============================================================
-
 Features
 --------
 Runs on Windows.  If it is getting to complex then it should probably be ported to Ansible or Salt.
 
-
-TODO
-----
-Clean up importing
 
 Levels of fabfile in this module
 --------------------------------
@@ -117,11 +110,11 @@ In this module I use three levels of fabfile.py:
 - at the /tests root
 - at a test/demo level
 
-This can get confusing , howevery they operate at different levels.  The project is about project operations eg
-releasing to pypi.
+This can get confusing, however they operate at different levels.  The project is about project operations eg
+releasing to fab_support to pypi.
 
-The tests level is then about managing the tests.  Some of these tests use fab support and a fab file which gives you
-the third level.
+The tests level is then about managing the tests.  Some of these tests use fab support and a fabfile.py which gives you
+the third level of nesting.
 
 Project level fabfile
 ~~~~~~~~~~~~~~~~~~~~~

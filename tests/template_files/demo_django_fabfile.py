@@ -17,11 +17,13 @@ import fab_support.django as django
 env['stages'] = {
     'demo': {
         'comment': 'Demo version of Django to be deployed on Heroku',
-        'DJANGO_SETTINGS_MODULE': 'demo_django.settings',  # Essential as django doesn't know name of app
         'HEROKU_APP_NAME': 'fab-support-test-demo',
-        'GIT_BRANCH': 'master'  # Local git branch to copy to Heroku
+        'GIT_BRANCH': 'master',  # Local git branch to copy to Heroku
+        'ENV' : {
+            'DJANGO_SETTINGS_MODULE': 'demo_django.settings',  # Essential as django doesn't know name of app
+        },
     },
-    }
+}
 
 
 @task

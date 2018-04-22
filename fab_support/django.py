@@ -9,17 +9,12 @@ from time import sleep
 from .heroku_utils import first_colour_database
 from .utils import repeat_run_local, FabricSupportException
 
-# See readme for documentation
-DJANGO_SETTINGS_MODULE = 'production'  # Which settings configuration to use in Django
+# Global environment variables See documentation
 HEROKU_APP_NAME = 'fab-support-app-test'  # name of this stages Heroku app
 HEROKU_PROD_APP_NAME = 'fab-support-app-prod'  # Name of Heroku app which is production, ie source of data
 HEROKU_OLD_PROD_APP_NAME = 'fab-support-app-old-prod'  # Name of heroku app to save production to
 PRODUCTION_URL = ''
 HEROKU_POSTGRES_TYPE = 'hobby-dev'
-SUPERUSER_NAME = 'superuser'  # TODO may want to get rid of defaults
-SUPERUSER_EMAIL = 'info@demo.com'
-# noinspection SpellCheckingInspection
-SUPERUSER_PASSWORD = 'akiualsdfha*&(j'  # TODO Need alternative
 GIT_PUSH = ''  # Default to false
 GIT_PUSH_DIR = '.'  #
 GIT_BRANCH = 'master'
@@ -52,35 +47,27 @@ def default_db_colour(app_name):
     return data['DATABASE_URL']
 
 
-def set_heroku_environment_variables():
+def set_heroku_environment_variables(stage):
     """This sets all the environment variables that a Django recipe needs."""
-    local(f"heroku config:set DJANGO_SETTINGS_MODULE={DJANGO_SETTINGS_MODULE} --app {HEROKU_APP_NAME}")
-    local(f"heroku config:set PYTHONHASHSEED=random --app {HEROKU_APP_NAME}")
-    try:
-        allowed_hosts = os.environ['DJANGO_ALLOWED_HOSTS']
-    except KeyError:
+    # TODO deal with no 'ENV'
+    env_dict = env['stages'][stage]['ENV']  # Should be a dictionary
+    # Set all the variables you need
+    for key, value in env_dict.items():
+        local('heroku config:set {}={} --app {}'.format(key, value, HEROKU_APP_NAME))
+    # Setup defaults for some ENV variables if have not been setup
+    if 'DJANGO_ALLOWED_HOSTS' not in env_dict:
         allowed_hosts = f'{HEROKU_APP_NAME}.herokuapp.com'
-    local(f'heroku config:set DJANGO_ALLOWED_HOSTS="{allowed_hosts}" --app {HEROKU_APP_NAME}')
-    # TODO 'DJANGO_SECRET_KEY' needs to be installed or have useful defaults
-    not_used = []
-    for config in ('DJANGO_SECRET_KEY', 'DJANGO_ADMIN_URL',
-                   'DJANGO_AWS_ACCESS_KEY_ID', 'DJANGO_AWS_SECRET_ACCESS_KEY', 'DJANGO_AWS_STORAGE_BUCKET_NAME',
-                   'DJANGO_MAILGUN_API_KEY', 'DJANGO_SERVER_EMAIL', 'MAILGUN_SENDER_DOMAIN',
-                   'DJANGO_ACCOUNT_ALLOW_REGISTRATION', 'DJANGO_SENTRY_DSN',
-                   'XERO_CONSUMER_SECRET', 'XERO_CONSUMER_KEY'):
-        try:
-            local('heroku config:set {}={} --app {}'.format(config, os.environ[config], HEROKU_APP_NAME))
-        except KeyError:
-            # This environment variable won't be set
-            not_used.append(config)
-    if not_used:
-        print(f'The following config variables were not used: {not_used}')
+        local(f'heroku config:set DJANGO_ALLOWED_HOSTS="{allowed_hosts}" --app {HEROKU_APP_NAME}')
+    if 'DJANGO_SETTINGS_MODULE' not in env_dict:
+        local(f'heroku config:set DJANGO_SETTINGS_MODULE=production --app {HEROKU_APP_NAME}')
+    if 'PYTHONHASHSEED' not in env_dict:
+        local(f'heroku config:set PYTHONHASHSEED=random --app {HEROKU_APP_NAME}')
 
 
-def raw_update_app():
+def raw_update_app(stage):
     """Update of app to latest version"""
     # Put the heroku app in maintenance mode TODO
-    set_heroku_environment_variables()  # In case anything has changed
+    set_heroku_environment_variables(stage)  # In case anything has changed
     # connect git to the correct remote repository
     local('heroku git:remote -a {}'.format(HEROKU_APP_NAME))
     # Need to push the branch in git to the master branch in the remote heroku repository
@@ -123,7 +110,7 @@ def install_heroku_plugins(plug_in_list):
 
 
 # #############
-def _create_newbuild():
+def _create_newbuild(stage):
     """This builds the database and waits for it be ready.  It is is safe to run and won't
     destroy any existing infrastructure."""
     local(f'heroku create {HEROKU_APP_NAME} --buildpack https://github.com/heroku/heroku-buildpack-python --region eu')
@@ -143,7 +130,7 @@ def _create_newbuild():
     repeat_run_local(f'heroku pg:backups:schedule --at 04:00 --app {HEROKU_APP_NAME}')
     # Already promoted as new local('heroku pg:promote DATABASE_URL --app my-app-prod')
     # Leaving out and aws and reddis
-    raw_update_app()
+    raw_update_app(stage)
     local('heroku run python manage.py check --deploy')  # make sure all ok
 
     # Create superuser - the interactive command does not allow you to script the password
@@ -163,8 +150,7 @@ def get_global_environment_variables(stage):
     for global_env in ('HEROKU_APP_NAME', 'HEROKU_PROD_APP_NAME', 'HEROKU_OLD_PROD_APP_NAME',
                        'PRODUCTION_URL',
                        'HEROKU_POSTGRES_TYPE',
-                       'SUPERUSER_NAME', 'USES_CELERY',
-                       'SUPERUSER_EMAIL', 'SUPERUSER_PASSWORD',
+                       'USES_CELERY',
                        'GIT_BRANCH', 'GIT_PUSH', 'GIT_PUSH_DIR',
                        'DJANGO_SETTINGS_MODULE'):
         try:
@@ -177,7 +163,7 @@ def get_global_environment_variables(stage):
 @task
 def create_newbuild(stage):
     get_global_environment_variables(stage)
-    _create_newbuild()
+    _create_newbuild(stage)
 
 
 def is_production():
@@ -216,8 +202,8 @@ def _build_app(stage='uat'):
         if stage != 'prod':
             pass  # ignore errors in case original does not exist
         else:
-            raise Exception('Must stop if an error when deleting a production database.')
-    _create_newbuild()
+            raise Exception('Must stop if an error when deleting a production database as now the only working instance is UAT.')
+    _create_newbuild(stage)
     _transfer_database_from_production(stage)
     # makemigrations should be run locally and the results checked into git
     # Need to migrate the old database schema from the master production database

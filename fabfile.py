@@ -1,4 +1,4 @@
-from fabric.api import task, local
+from fabric.api import task, local, lcd
 from os import remove, walk
 from os.path import join
 import re
@@ -96,5 +96,19 @@ def release():
 @task
 def make_docs():
     """Create documentation"""
-    # Another to upload
-    pass
+    with lcd('docs'):
+        ## generate Sphinx HTML documentation, including API docs
+        try:
+            remove('docs/fab_support.rst')
+        except FileNotFoundError:
+            pass
+        try:
+            remove('docs/modules.rst')
+        except FileNotFoundError:
+            pass
+        local('sphinx-apidoc -o . ../fab_support')
+        # $ (MAKE) - C         docs         clean
+        local('make html')
+        # $(BROWSER)    docs / _build / html / index.html
+
+
