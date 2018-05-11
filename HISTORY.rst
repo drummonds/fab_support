@@ -2,6 +2,10 @@
 History
 =======
 
+0.2.1 (2018-05-11)
+------------------
+* Updating pelican comamnds to the parameter method of passing stage
+
 0.2.0 (2018-04-20)
 ------------------
 * Change the way environment variables are passed through.

@@ -7,7 +7,6 @@ from fabric.api import env, task
 
 @task
 def list_stages():
-    print('Hi from list_stages')
     try:
         stages = env['stages']
         print('List of stages')

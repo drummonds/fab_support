@@ -19,6 +19,7 @@ import os
 from recommonmark.parser import CommonMarkParser
 
 source_parsers = {
+    '.rst': 'restructuredtext',
     '.md': CommonMarkParser,
     '.mkd': CommonMarkParser,
     '.markdown': CommonMarkParser,

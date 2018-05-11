@@ -18,17 +18,21 @@ from unipath import Path, DIRS
 
 from pelican.server import ComplexHTTPRequestHandler
 
+@task
+def create_newbuild(stage):
+    get_global_environment_variables(stage)
+    _create_newbuild(stage)
+
 
 @task
-def build():
+def build(stage):
     """Build version of site ready for use locally or deployment to main site eg fab local build"""
-    require('stage')
-    copy_images()
+    copy_images(stage)
     local(f'pelican -s {env.config_file}')
 
 
 @task
-def copy_images(alias='ci'):
+def copy_images(stage, alias='ci'):
     """Copy files in all images directories"""
     src = Path(env.deploy_path).ancestor(2).child('content')
     dst = src.ancestor(2).child('images')
@@ -38,24 +42,21 @@ def copy_images(alias='ci'):
 
 
 @task
-def rebuild():
+def rebuild(stage):
     """`build` with the delete switch"""
-    require('stage')
-    local(f'pelican -d -s {env.config_file}')
+    local(f"pelican -d -s {env['stages'][stage]['config_file']}")
 
 
 @task
 def regenerate():
     """Automatically regenerate site upon file modification"""
-    require('stage')
-    local('pelican -r -s {env.config_file}')
+    local("pelican -r -s {env['stages'][stage]['config_file']}")
 
 
 @task
-def serve():
+def serve(stage):
     """Serve site at eg http://localhost:8000/"""
-    require('stage')
-    os.chdir(env.deploy_path)
+    os.chdir(env['stages'][stage]['deploy_path'])
 
     class AddressReuseTCPServer(socketserver.TCPServer):
         allow_reuse_address = True
@@ -67,19 +68,21 @@ def serve():
 
 
 @task
-def reserve():
+def reserve(stage):
     """`build`, then `serve`"""
-    build()
-    serve()
+    build(stage)
+    serve(stage)
 
 
 @task
-def deploy():
+def deploy(stage):
     """Publish to stage. includes build."""
-    require('stage')
-    build()
-    print(f'Using copy from {env.deploy_path} to {env.destination}')
-    env['copy_method'](env.deploy_path, env.destination)
+    build(stage)
+    deploy_path = env['stages'][stage]['deploy_path']
+    destination = env['stages'][stage]['destination']
+    copy_method = env['stages'][stage]['copy_method']
+    print(f'Using copy from {deploy_path} to {destination}')
+    copy_method(deploy_path, destination)
     # ? clean()
     # copy_tree(DEPLOY_PATH, LOCAL_SITE_PATH)
     # copy_tree(DEPLOY_PATH.ancestor(2).child(
@@ -91,12 +94,12 @@ def deploy():
 
 
 @task
-def clean():
+def clean(stage):
     """Remove newly generated files from remote environment"""
-    require('stage')
-    if os.path.isdir(env.destination):
-        shutil.rmtree(env.destination)
-        os.makedirs(env.destination)
+    destination = env['stages'][stage]['destination']
+    if os.path.isdir(destination):
+        shutil.rmtree(destination)
+        os.makedirs(destination)
 
         # ?try:
         #    shutil.rmtree(LOCAL_SITE_PATH)
@@ -105,15 +108,15 @@ def clean():
 
 
 @task
-def s3_upload():
+def s3_upload(stage):
     """Publish to S3"""
-    rebuild()
+    rebuild(stage)
     # get an access token, local (from) directory, and S3 (to) directory
     # from the command-line
     #local_directory = Path(normpath('./output'))
     local_directory = Path('./output').norm()
     print('Local directory = {}',format(local_directory))
-    bucket = S3_BUCKET
+    bucket = env['stages'][stage]['S3_BUCKET']
 
     client = boto3.client('s3')
 
@@ -151,8 +154,8 @@ def s3_upload():
 
 
 @task
-def gh_pages():
+def gh_pages(stage):
     """Publish to GitHub Pages"""
-    rebuild()
+    rebuild(stage)
     local("ghp-import -b {github_pages_branch} {deploy_path} -p".format(**env))
 

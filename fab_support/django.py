@@ -265,7 +265,6 @@ def transfer_database_from_production(stage='test', clean=True):
 def list_stages():
     """This is put here to test the exact same code in django as in set_stages.  In  one it seems to work
     and another to fail."""
-    print('Hi from list_stages in django')
     try:
         stages = env['stages']
         print('List of stages')
