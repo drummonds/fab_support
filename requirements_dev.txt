@@ -1,5 +1,5 @@
 PyYAML==3.12
-Sphinx==1.7.0b2
+Sphinx==1.7.4
 boto3==1.5.24
 bumpversion==0.5.3
 coverage==4.5
