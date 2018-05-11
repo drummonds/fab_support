@@ -1,5 +1,6 @@
 import os
 import shutil
+from time import sleep
 import unittest
 
 from fabric.api import local, lcd

@@ -11,6 +11,7 @@ fabric3==1.13.1.post1
 flake8==3.5.0
 model_mommy==1.5.1
 pelican==3.7.1
+psutil  # To deal with testing locking files on windows
 psycopg2-binary==2.7.4  # Without this will crash?
 python-dotenv==0.7.1
 recommonmark==0.4.0  # To support Markdown in docs
