@@ -14,7 +14,7 @@ pelican==3.7.1
 psycopg2-binary==2.7.4  # Without this will crash?
 python-dotenv==0.8.2
 recommonmark==0.4.0  # To support Markdown in docs
-tox==3.0.0rc1
+tox==3.0.0
 unipath==1.1
 watchdog==0.8.3
 wheel==0.30.0
