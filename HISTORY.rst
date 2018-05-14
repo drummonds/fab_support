@@ -4,7 +4,9 @@ History
 
 0.2.1 (2018-05-11)
 ------------------
-* Updating pelican comamnds to the parameter method of passing stage
+* Updating pelican comamnds to the parameter method of passing stage.
+Note tests were failing to a non obvious cause.  This was Heroku CLI needed updating to the latest version.
+I manually upgraded.
 
 0.2.0 (2018-04-20)
 ------------------

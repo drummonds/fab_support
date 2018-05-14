@@ -17,9 +17,10 @@ import sys
 import os
 
 from recommonmark.parser import CommonMarkParser
+from docutils.parsers.rst import Parser
 
 source_parsers = {
-    '.rst': 'restructuredtext',
+    '.rst': Parser,
     '.md': CommonMarkParser,
     '.mkd': CommonMarkParser,
     '.markdown': CommonMarkParser,

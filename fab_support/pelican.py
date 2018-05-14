@@ -18,23 +18,18 @@ from unipath import Path, DIRS
 
 from pelican.server import ComplexHTTPRequestHandler
 
-@task
-def create_newbuild(stage):
-    get_global_environment_variables(stage)
-    _create_newbuild(stage)
-
 
 @task
 def build(stage):
     """Build version of site ready for use locally or deployment to main site eg fab local build"""
     copy_images(stage)
-    local(f'pelican -s {env.config_file}')
+    local(f"pelican -s {env['stages'][stage]['config_file']}")
 
 
 @task
 def copy_images(stage, alias='ci'):
     """Copy files in all images directories"""
-    src = Path(env.deploy_path).ancestor(2).child('content')
+    src = Path(env['stages'][stage].deploy_path).ancestor(2).child('content')
     dst = src.ancestor(2).child('images')
     for my_dir in src.walk(filter=DIRS):  # os.walk('./..'):
         if my_dir.name == 'images':
@@ -61,9 +56,9 @@ def serve(stage):
     class AddressReuseTCPServer(socketserver.TCPServer):
         allow_reuse_address = True
 
-    server = AddressReuseTCPServer(('', env['PORT']), ComplexHTTPRequestHandler)
+    server = AddressReuseTCPServer(('', env['stages'][stage]['PORT']), ComplexHTTPRequestHandler)
 
-    sys.stderr.write('Serving on port {0} ...\n'.format(env['PORT']))
+    sys.stderr.write('Serving on port {0} ...\n'.format(env['stages'][stage]['PORT']))
     server.serve_forever()
 
 
@@ -157,5 +152,5 @@ def s3_upload(stage):
 def gh_pages(stage):
     """Publish to GitHub Pages"""
     rebuild(stage)
-    local("ghp-import -b {github_pages_branch} {deploy_path} -p".format(**env))
+    local(f"ghp-import -b {env['stages'][stage]['github_pages_branch']} {env['stages'][stage]['deploy_path']} -p")
 
