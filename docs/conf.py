@@ -20,7 +20,7 @@ from recommonmark.parser import CommonMarkParser
 from docutils.parsers.rst import Parser
 
 source_parsers = {
-    '.rst': Parser,
+#    '.rst': Parser,
     '.md': CommonMarkParser,
     '.mkd': CommonMarkParser,
     '.markdown': CommonMarkParser,

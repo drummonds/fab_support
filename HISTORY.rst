@@ -5,12 +5,14 @@ History
 0.2.1 (2018-05-11)
 ------------------
 * Updating pelican comamnds to the parameter method of passing stage.
+
 Note tests were failing to a non obvious cause.  This was Heroku CLI needed updating to the latest version.
 I manually upgraded.
 
 0.2.0 (2018-04-20)
 ------------------
 * Change the way environment variables are passed through.
+
 In version 0.1 only the following variables were considered env variables:
 
 'DJANGO_SECRET_KEY', 'DJANGO_ADMIN_URL', 'DJANGO_AWS_ACCESS_KEY_ID', 'DJANGO_AWS_SECRET_ACCESS_KEY',
