@@ -29,7 +29,7 @@ def build(stage):
 @task
 def copy_images(stage, alias='ci'):
     """Copy files in all images directories"""
-    src = Path(env['stages'][stage].deploy_path).ancestor(2).child('content')
+    src = Path(env['stages'][stage]['deploy_path']).ancestor(2).child('content')
     dst = src.ancestor(2).child('images')
     for my_dir in src.walk(filter=DIRS):  # os.walk('./..'):
         if my_dir.name == 'images':
@@ -152,5 +152,5 @@ def s3_upload(stage):
 def gh_pages(stage):
     """Publish to GitHub Pages"""
     rebuild(stage)
-    local(f"ghp-import -b {env['stages'][stage]['github_pages_branch']} {env['stages'][stage]['deploy_path']} -p")
+    local(f"ghp-import -b {env['stages'][stage]['github_pages_branch']} {env['stages'][stage]['destination']} -p")
 
