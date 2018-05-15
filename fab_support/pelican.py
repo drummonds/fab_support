@@ -29,8 +29,8 @@ def build(stage):
 @task
 def copy_images(stage, alias='ci'):
     """Copy files in all images directories"""
-    src = Path(env['stages'][stage]['deploy_path']).ancestor(2).child('content')
-    dst = src.ancestor(2).child('images')
+    src = Path(env['stages'][stage]['deploy_path']).ancestor(1).child('content')
+    dst = src.ancestor(1).child('images')
     for my_dir in src.walk(filter=DIRS):  # os.walk('./..'):
         if my_dir.name == 'images':
             copy_tree(my_dir, dst)
@@ -78,14 +78,6 @@ def deploy(stage):
     copy_method = env['stages'][stage]['copy_method']
     print(f'Using copy from {deploy_path} to {destination}')
     copy_method(deploy_path, destination)
-    # ? clean()
-    # copy_tree(DEPLOY_PATH, LOCAL_SITE_PATH)
-    # copy_tree(DEPLOY_PATH.ancestor(2).child(
-    #     'Pelican').child('pelican-bootstrap3').child('static'),
-    #                 LOCAL_SITE_PATH.child('static'))
-    # copy_tree(DEPLOY_PATH.ancestor(1).child(
-    #     'content').child('images'),
-    #                 LOCAL_SITE_PATH.child('images'))
 
 
 @task

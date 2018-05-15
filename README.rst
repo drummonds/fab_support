@@ -19,8 +19,6 @@ fab_support
 Code to implement staging in Fabric and recipes for using that staging for pelican deployments and Django to Heroku.
 It supports a local .env file importing for storing secrets that you don't want to store in git.
 
-Testing if doc is updating.
-
 Stages
 ---------
 Stages are the different stages of development of an application.
