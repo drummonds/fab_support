@@ -3,7 +3,7 @@ Sphinx==1.7.5
 boto3==1.7.35
 bumpversion==0.5.3
 coverage==4.5.1
-django==2.0.5
+django==2.0.6
 django-allauth==0.36.0
 django-environ==0.4.4
 django-tables2==1.21.2
