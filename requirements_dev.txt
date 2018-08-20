@@ -1,22 +1,22 @@
-PyYAML==3.12
-Sphinx==1.7.4
-boto3==1.7.19
+PyYAML==3.13
+Sphinx==1.7.7
+boto3==1.7.80
 bumpversion==0.5.3
 coverage==4.5.1
-django==2.0.5
+django==2.1
 django-allauth==0.36.0
-django-environ==0.4.4
+django-environ==0.4.5
 django-tables2==1.21.2
 fabric3==1.14.post1
 flake8==3.5.0
-model_mommy==1.5.1
+model_mommy==1.6.0
 pelican==3.7.1
-psutil==5.4.4  # To deal with testing locking files on windows
-psycopg2-binary==2.7.4  # Without this will crash?
-python-dotenv==0.8.2
+psutil==5.4.7  # To deal with testing locking files on windows
+psycopg2-binary==2.7.5  # Without this will crash?
+python-dotenv==0.9.1
 recommonmark==0.4.0  # To support Markdown in docs
-tox==3.0.0
+tox==3.2.1
 unipath==1.1
 watchdog==0.8.3
 wheel==0.31.1
-whitenoise==3.3.1
+whitenoise==4.0
