@@ -1,5 +1,5 @@
 django==2.1
-psycopg2-binary==2.7.4  # Without this will crash?
+psycopg2-binary==2.7.5  # Without this will crash?
 django-allauth==0.36.0 # sign in niceties
 django-tables2==1.21.2 # Demo table format
 model_mommy==1.6.0
