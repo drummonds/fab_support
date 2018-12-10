@@ -1,5 +1,5 @@
 django==2.1.4
-psycopg2-binary==2.7.4  # Without this will crash?
+psycopg2-binary==2.7.6.1  # Without this will crash?
 
 # WSGI Handler
 # ------------------------------------------------
