@@ -12,7 +12,7 @@ flake8==3.6.0
 model_mommy==1.6.0
 pelican==4.0.1
 psutil==5.4.8  # To deal with testing locking files on windows
-psycopg2-binary==2.7.4  # Without this will crash?
+psycopg2-binary==2.7.6.1  # Without this will crash?
 python-dotenv==0.8.2
 recommonmark==0.4.0  # To support Markdown in docs
 tox==3.0.0
