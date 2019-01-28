@@ -8,7 +8,7 @@ django-allauth==0.38.0
 django-environ==0.4.5
 django-tables2==2.0.4
 fabric3==1.14.post1
-flake8==3.5.0
+flake8==3.6.0
 model_mommy==1.5.1
 pelican==3.7.1
 psutil==5.4.4  # To deal with testing locking files on windows
