@@ -2,7 +2,7 @@ django==2.1.7
 psycopg2-binary==2.7.4  # Without this will crash?
 django-allauth==0.39.1 # sign in niceties
 django-tables2==2.0.5 # Demo table format
-model_mommy==1.5.1
+model_mommy==1.6.0
 
 # WSGI Handler
 # ------------------------------------------------
