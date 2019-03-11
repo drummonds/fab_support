@@ -15,7 +15,7 @@ psutil==5.6.0  # To deal with testing locking files on windows
 psycopg2-binary==2.7.7  # Without this will crash?
 python-dotenv==0.10.1
 recommonmark==0.5.0  # To support Markdown in docs
-tox==3.0.0
+tox==3.7.0
 unipath==1.1
 watchdog==0.8.3
 wheel==0.31.1
