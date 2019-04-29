@@ -4,7 +4,7 @@ boto3==1.9.137
 bumpversion==0.5.3
 coverage==4.5.3
 django==2.2
-django-allauth==0.36.0
+django-allauth==0.39.1
 django-environ==0.4.4
 django-tables2==1.21.2
 fabric3==1.14.post1
