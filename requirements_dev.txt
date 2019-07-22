@@ -9,7 +9,7 @@ django-environ==0.4.5
 django-tables2==2.1.0
 fabric3==1.14.post1
 flake8==3.7.8
-model_mommy==1.5.1
+model_mommy==1.6.0
 pelican==3.7.1
 psutil==5.4.4  # To deal with testing locking files on windows
 psycopg2-binary==2.7.4  # Without this will crash?
