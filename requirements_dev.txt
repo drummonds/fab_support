@@ -1,6 +1,6 @@
 PyYAML==5.1.2
 Sphinx==2.2.0
-boto3==1.7.19
+boto3==1.9.215
 bumpversion==0.5.3
 coverage==4.5.1
 django==2.0.5
