@@ -13,7 +13,7 @@ model_mommy==2.0.0
 pelican==4.2.0
 psutil==5.6.3  # To deal with testing locking files on windows
 psycopg2-binary==2.8.4  # Without this will crash?
-python-dotenv==0.8.2
+python-dotenv==0.10.3
 recommonmark==0.4.0  # To support Markdown in docs
 tox==3.0.0
 unipath==1.1
