@@ -10,7 +10,7 @@ django-tables2==2.1.1
 fabric3==1.14.post1
 flake8==3.7.8
 model_mommy==2.0.0
-pelican==3.7.1
+pelican==4.2.0
 psutil==5.4.4  # To deal with testing locking files on windows
 psycopg2-binary==2.7.4  # Without this will crash?
 python-dotenv==0.8.2
