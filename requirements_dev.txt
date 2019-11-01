@@ -1,4 +1,4 @@
-PyYAML==3.12
+PyYAML==5.1
 Sphinx==1.7.4
 boto3==1.7.19
 bumpversion==0.5.3
