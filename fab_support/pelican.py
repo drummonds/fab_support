@@ -28,7 +28,7 @@ def build(stage):
 
 @task
 def copy_images(stage, alias='ci'):
-    """Copy files in all images directories"""
+    """Copy files in all images directories into a root directory from which they can be deployed"""
     src = Path(env['stages'][stage]['deploy_path']).ancestor(1).child('content')
     dst = src.ancestor(1).child('images')
     for my_dir in src.walk(filter=DIRS):  # os.walk('./..'):

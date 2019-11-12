@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* Humphrey Drummond <hum3@drummonds.net>
+* Humphrey Drummond <hum3@drummond.info>
 
 Contributors
 ------------

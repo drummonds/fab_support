@@ -19,6 +19,10 @@ fab_support
 Code to implement staging in Fabric and recipes for using that staging for pelican deployments and Django to Heroku.
 It supports a local .env file importing for storing secrets that you don't want to store in git.
 
+See the roadmap for current development.
+
+https://drummonds.atlassian.net/secure/Roadmap.jspa?projectKey=FS&rapidView=1
+
 Stages
 ---------
 Stages are the different stages of development of an application.
@@ -80,7 +84,7 @@ Then the deployment by Pelican is pretty standardised eg build deploy and you ha
 
 `fab localsite deploy`
 
-I think it was inspired by BreytenErnsting_.  This is then reiplmeneted using the standard env environment
+I think it was inspired by BreytenErnsting_.  This is then reimplemented using the standard env environment
 and support in Fabric.
 
 
