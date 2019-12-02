@@ -11,6 +11,7 @@ from time import sleep
 def list_databases(app=''):
     """
     List
+
     :param app: Name of app to use if default '' will return current list
     :return: list of database names
     """

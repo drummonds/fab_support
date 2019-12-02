@@ -11,7 +11,7 @@ sys.path.append(str(root))
 # noinspection PyUnresolvedReferences
 import fab_support
 # noinspection PyUnresolvedReferences
-import fab_support.django as django
+import fab_support.heroku as django
 
 # Definition of different environments to deploy to
 env['stages'] = {

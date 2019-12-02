@@ -72,20 +72,42 @@ You will then need a fabfile.py like this:
     }
 
 
-===============================
-General variables env['stages']
-===============================
+------
+Stages
+------
+A stage encapsulates all the deployement characteristics that you need to deploy it.
+These will typically include the following:
 
-As shown above this is a list of stages.  Each stage is a dictionary which has general variables and also an ENV
-dictionary which has all the environment variables that are to be passed through to the final run time environment.
+- *prod* production
+- *uat* user acceptance test
+- *dev* development
+
+You are free to use any names for the stagies, however fab_support has some special cases.
+
+~~~~~~~~~~
+prod stage
+~~~~~~~~~~
+This stage is the production and so some tasks are made more difficult.
+eg to kill the production stage you will normally need the command:
+
+`fab kill_app:prod,safety_on=False`
+
+Without the safety_on parameter it will fail
+
+-------------------------------
+General variables env['stage']
+-------------------------------
+
+Each stage is defined as a dictionary which has general variables stored at env['stage'].
 
 The documentation breaks down the general definitions here (those that have a meaning in fab_support) and any
 environment variables that have a special meaning in the next section.
 
-======================== ========================  ===============================================================
-Name                     Default                   Comments
-======================== ========================  ===============================================================
+======================== ======================== ===============================================================
+Name                     Default                  Comments
+======================== ======================== ===============================================================
 comment                                            Identifies which stage this is - used internally eg fab fab_support.list_stages
+FS_PLATFORM              heroku                    Which platform is being used eg heroku, dokku
 GIT_BRANCH               master                    Which GIT branch to use when building deployment, Required for Heroku deployement when you want to deploy a different branch than master [#git]_.
 GIT_PUSH                 *''*                      For specialised GIT push eg using a subtree 'git subtree push --prefix tests/demo_django_postgres heroku master'
 GIT_PUSH_DIR             '.'                       Local directory to run git push from eg '../..'
@@ -96,7 +118,7 @@ HEROKU_POSTGRES_TYPE     hobby-dev                 free to 10K rows, hobby-basic
 PRODUCTION_URL           *''*                      This is where the production URL should be hosted. empty string if no remote URL [#productionurl]_.
 USES_CELERY              False                     If True then will set up on Heroku a scaling worker
 
-======================== ========================  ===============================================================
+======================== ======================== ===============================================================
 
 .. [#git] Heroku uses the local git repository to push from by default. So GIT_BRANCH will be the branch in the local repository
 .. [#productionurl] This controls the heroku routing layer which is external to the Django routing layer.  The
@@ -106,9 +128,9 @@ USES_CELERY              False                     If True then will set up on H
     environment variable.
 
 
-=====================================================
+-----------------------------------------------------
 Environment variables env['stages']['stage_x']['ENV']
-=====================================================
+-----------------------------------------------------
 
 These are the variables that are set in the .env and are carried through to the development environments.  stage_x might
 be `uat` or `prod` etc.  For heroku this will then involve the commmand line command like this
@@ -149,8 +171,11 @@ DJANGO_ALLOWED_HOSTS     Set                       Will by default allow the app
 PYTHONHASHSEED           random                    Heroku default
 ======================== ========================  ===============================================================
 
+
+--------------------
 DJANGO_ALLOWED_HOSTS
 --------------------
+
 This pattern was defined by Python django cookiecutter project and is the definition of a environment variable so
 that [`ALLOWED_HOSTS`]_ which is a standard Django setting.  Then in the settings file you would have code like this:
 
@@ -168,4 +193,12 @@ Heroku                   f'{HEROKU_APP_NAME}.herokuapp.com'
 
 .. _`ALLOWED_HOSTS`: https://docs.djangoproject.com/en/2.0/ref/settings/
 
+
+------
+Fabric
+------
+
+Fabric version 1 went through a long rewrite into version 2, one of the benefits was supporting Python 3.  In the
+ meantime the original Version 1 Fabric was ported to Python 3 as a rewrite.  This is the version that is currently
+ used.
 

@@ -1,10 +1,7 @@
 import datetime as dt
 from fabric.api import env, local, task, lcd, settings
 import json
-import os
-import re
 import time
-from time import sleep
 
 from .heroku_utils import first_colour_database
 from .utils import repeat_run_local, FabricSupportException
@@ -80,7 +77,6 @@ def raw_update_app(stage):
         with lcd(GIT_PUSH_DIR):
             local(GIT_PUSH)
     # Don't need to scale workers down as not using eg heroku ps:scale worker=0
-    # Will add guvscale to spin workers up and down from 0
     if USES_CELERY:
         local(f'heroku ps:scale worker=1 -a {HEROKU_APP_NAME}')
     # Have used performance web=standard-1x and worker=standard-2x but adjusted app to used less memory
@@ -119,10 +115,6 @@ def _create_newbuild(stage):
     local(f'heroku addons:create heroku-postgresql:{HEROKU_POSTGRES_TYPE} --app {HEROKU_APP_NAME}')
     local(f'heroku addons:create cloudamqp:lemur --app {HEROKU_APP_NAME}')
     local(f'heroku addons:create papertrail:choklad --app {HEROKU_APP_NAME}')
-    # Add guvscale processing to allow celery queue to be at zero
-    install_heroku_plugins(['heroku-cli-oauth', 'heroku-guvscale'])
-    # start of configuring guvscale to autoscale
-    # local(f'heroku guvscale:getconfig --app {HEROKU_APP_NAME}')
     # set database backup schedule
     repeat_run_local(f'heroku pg:wait --app {HEROKU_APP_NAME}')  # It takes some time for DB so wait for it
     # When wait returns the database is not necessarily completely finished preparing itself.  So the next
@@ -160,7 +152,6 @@ def get_global_environment_variables(stage):
             pass
 
 
-@task
 def create_newbuild(stage):
     get_global_environment_variables(stage)
     _create_newbuild(stage)
@@ -174,18 +165,20 @@ def _kill_app():
     """see kill app"""
     local(f'heroku destroy {HEROKU_APP_NAME} --confirm {HEROKU_APP_NAME}')
 
+def list_app_names():
+    results = json.loads(local("heroku apps --json", capture=True))
+    return [heroku_app['name'] for heroku_app in results]
 
-@task
+
 def kill_app(stage, safety_on=True):
     """Kill app notice that to the syntax for the production version is:
     fab the_stage kill_app:False"""
-    # Todo Add steps to verify that it exists (optional) and make sure it is deleted at the end
     get_global_environment_variables(stage)
-    if not (is_production() and not safety_on):
-        _kill_app()
+    if HEROKU_APP_NAME in list_app_names():
+        if not (is_production() and not safety_on):
+            _kill_app()
 
 
-@task
 def build_uat():
     """Build a new uat environments"""
     build_app('uat')
@@ -210,7 +203,6 @@ def _build_app(stage='uat'):
     local('heroku run "yes \'yes\' | python manage.py migrate"')  # Force deletion of stale content types
 
 
-@task
 def build_app(stage='uat'):
     start_time = time.time()
     get_global_environment_variables(stage)
@@ -230,7 +222,6 @@ def _create_new_db():
     return first_colour_database(app=HEROKU_APP_NAME)
 
 
-@task
 def create_new_db(stage='uat'):
     get_global_environment_variables(stage)
     return _create_new_db()
@@ -255,13 +246,11 @@ def _transfer_database_from_production(stage='test', clean=True):
         local('heroku maintenance:off --app {} '.format(HEROKU_APP_NAME))
 
 
-@task
 def transfer_database_from_production(stage='test', clean=True):
     get_global_environment_variables(stage)
     _transfer_database_from_production(stage, clean)
 
 
-@task
 def list_stages():
     """This is put here to test the exact same code in django as in set_stages.  In  one it seems to work
     and another to fail."""
@@ -317,7 +306,6 @@ def _promote_uat():
             local(f'heroku maintenance:off --app {HEROKU_PROD_APP_NAME} ')  # Different prod does this matter?
 
 
-@task
 def promote_uat(stage='uat'):
     get_global_environment_variables(stage)
     start_time = time.time()

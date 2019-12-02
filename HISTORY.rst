@@ -5,10 +5,10 @@ History
 ------------------
 This is actually a series of major breaking changes.
 
-* Changing from .env to config.json for storage of secrets
-* Changing from predefined tasks to methods which can be used
-* Implementation of dokku alongside Heroku as a deployment platform
 * Changing from requirements.txt to pipenv for managing dependencies
+* Changing from predefined tasks to methods which can be used.  The
+  destination eg heroku or dokku is abstracted into the definition of the stage.
+* Implementation of dokku alongside Heroku as a deployment platform
 
 .env to config.json
 ~~~~~~~~~~~~~~~~~~~
@@ -21,6 +21,9 @@ Predefined tasks to methods
 The previous methods meant that including tasks created lots of verbiage when you did `fab --list`
 In order to simplify the output I am now providing tools that need to be selected for your
 particular use case.
+
+The abstraction of the destination eg heroku or dokku into the stage is meant to make it
+really easy to use either platforms in a mixed deployment.
 
 Support for dokku
 ~~~~~~~~~~~~~~~~~

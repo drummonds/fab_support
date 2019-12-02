@@ -11,7 +11,7 @@ sys.path.append(str(root))
 import fab_support
 from fab_support import set_stages
 # noinspection PyUnresolvedReferences
-from fab_support.django import kill_app, build_app  # Can call directly
+from fab_support.heroku import kill_app, build_app  # Can call directly
 
 # Definition of different environments to deploy to
 set_stages(globals(), {

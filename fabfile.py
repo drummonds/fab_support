@@ -2,6 +2,7 @@ from fabric.api import task, local, lcd
 from os import remove, walk
 from os.path import join
 import re
+import sys
 
 from tests.test_utils import remove_tree
 from tests.test_django import clean_test_django
@@ -112,3 +113,12 @@ def make_docs():
         # $(BROWSER)    docs / _build / html / index.html
 
 
+@task
+def identity():
+    """Which version of fabfile am I using"""
+    try:
+        import fab_support
+        version = f"fab_support version {fab_support._version.__version__}"
+    except ImportError:
+        version = 'No fab_support to import'
+    print(f"Module fabfile {version}")  # Use print rather than exit to make it easier to capture test output

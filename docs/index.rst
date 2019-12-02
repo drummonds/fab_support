@@ -8,8 +8,10 @@ Contents:
 
    readme
    installation
+   concepts
    usage
    modules
+   development
    contributing
    authors
    history
