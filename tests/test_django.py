@@ -70,7 +70,8 @@ class TestBasicFabSupport(unittest.TestCase):
         copy_local_file("demo_django.env", ".env")  # Secrets managment
         copy_local_file("demo_django_Procfile", "Procfile")  # Workers required for Heroku/dokku
         copy_local_file("demo_Pipfile", "Pipfile")  # Python env
-        copy_local_file("demo_django_settings.py", "settings.py", suffix= " /Y")  # Need to customise
+        copy_local_file("demo_Pipfile.lock", "Pipfile.lock")  # Environment lock
+        copy_local_file("demo_django_settings.py", "demo_django/settings.py", suffix= " /Y")  # Need to customise
         # for collect statics (alternative would be to ignore collect static)
         # Setup a git for Heroku to use to deploy demo_django
         local("git init demo_django")
