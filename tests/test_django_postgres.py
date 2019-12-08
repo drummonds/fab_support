@@ -2,66 +2,109 @@ import os
 import unittest
 
 from fabric.api import local, lcd, env
+from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.firefox.options import Options
 
 from tests.utils import verbose
 
-from tests.demo_django_postgres import fabfile  # This is to load the env in the call fabfile
+from tests.demo_django_postgres import (
+    fabfile,
+)  # This is to load the env in the call fabfile
+
 #  This can get confusing as there are two levels of fab file being used.
 
 
 def clean_setup_postgres():
     # Try and remove running apps however relies on demo_django directory not being deleted
     # before try and remove
-    if os.path.isdir('tests'):
-        my_path = 'tests/demo_django_postgres'
-    elif os.path.isdir('template_files'):
-        my_path = 'demo_django_postgres'
+    if os.path.isdir("tests"):
+        my_path = "tests/demo_django_postgres"
+    elif os.path.isdir("template_files"):
+        my_path = "demo_django_postgres"
     else:
         raise Exception
     with lcd(my_path):
-        for stage in ('test', 'uat', 'prod',):
+        for stage in ("test", "uat", "prod", "old_prod"):
             try:
-                local(f'fab fab_support.django.kill_app:{stage}')  # Remove any existing run time
-            except SystemExit:
-                pass
-        # Get rid of the other environments that may have been build
-        for stage, env_name in (('uat', 'HEROKU_OLD_PROD_APP_NAME',), ):
-            try:
-                app = env['stages'][stage][env_name]
-                local(f'heroku destroy {app} --confirm {app}')
+                local(f"fab kill_app:{stage}")  # Remove any existing run time
             except SystemExit:
                 pass
 
 
 class TestDjangoPostgresSupport(unittest.TestCase):
+    """These tests are done not building an application from start but by using a test application embedded here.
+    Like the demo_django we are executing fabric as a nested environment which will be separate from this one."""
 
     def setUp(self):
         clean_setup_postgres()
+        self.stage = "test"  # default
 
     def tearDown(self):
-        pass
+        """If you want to look at the test environment then uncomment this."""
+        try:
+            with lcd("demo_django_postgres"):
+                local(f"fab kill_app:{self.stage}")  # Remove any existing run time
+                pass
+        except SystemExit:
+            pass
 
     def test_list(self):
         """Aim is to run fab --list making sure we are running fab in the correct test directory"""
-        with lcd('demo_django_postgres'):
+        with lcd("demo_django_postgres"):
             # Check staging and fabfile are correct
-            result = local('fab --list', capture=True)
+            result = local("fab --list", capture=True)
             if verbose():
                 print(result)
-            self.assertNotRegex(result, 'builds source and wheel', 'Should not be using main fabfile')
-            self.assertRegex(result, 'test_django_postgres_fab_file', 'should be using local fab file with local task')
-            self.assertRegex(result, 'list_stages', 'Should have task list_stages')
+            self.assertNotRegex(
+                result, "builds source and wheel", "Should not be using main fabfile"
+            )
+            self.assertRegex(
+                result,
+                "test_django_postgres_fab_file",
+                "should be using local fab file with local task",
+            )
+            self.assertRegex(result, "list_stages", "Should have task list_stages")
 
     def test_list_stages(self):
         """Should have one and only demo when you list stages"""
-        with lcd('demo_django_postgres'):
+        with lcd("demo_django_postgres"):
             # Check staging and fabfile are correct
-            result = local('fab fab_support.list_stages', capture=True)
+            result = local("fab list_stages", capture=True)
             if verbose():
                 print(result)
-            self.assertRegex(result, 'Test version of Django', 'demo stage')
-            self.assertRegex(result, 'uat', 'UAT stage')
-            self.assertRegex(result, 'prod', 'production stage')
+            self.assertRegex(result, "Test version of Django", "demo stage")
+            self.assertRegex(result, "uat", "UAT stage")
+            self.assertRegex(result, "prod", "production stage")
+
+    def demo_project_actually_running(self, at_url, expect_running=True):
+        try:
+            options = Options()
+            options.add_argument("-headless")  # Run headless for CI testing
+            # If you want to see then switch this off
+            self.browser = webdriver.Firefox(options=options)
+            self.browser.get(at_url)
+            if expect_running:
+                self.assertIn(
+                    "Fab Support",
+                    self.browser.find_element_by_tag_name("h1").text,
+                    f"Should be looking at the demo project home page for url {at_url}",
+                )
+            else:
+                try:
+                    self.assertNotIn(
+                    "Fab Support",
+                    self.browser.find_element_by_tag_name("h1").text,
+                    f"This project is not supposed to be running {at_url}",
+                )
+                except NoSuchElementException:  # No h2 tag, so it isn't running
+                    pass
+        finally:
+            try:
+                pass
+                # self.browser.close()
+            except AttributeError:  # Problem created browser
+                pass
 
     def test_django_postgres(self):
         """
@@ -70,22 +113,13 @@ class TestDjangoPostgresSupport(unittest.TestCase):
 
         This allows test data and production data to be simulated.
 
-        After running this the directory is kept available.  You can test the server locally as above.
-
-        We will follow the following story:
-
-        New Build UAT with new production data
-        Promote UAT to production
-        Build UAT with production data
-        Update production
-        Promote UAT to production
-
-
-        The Heroku test version that is spun up is a test version at zero cost.
+        The Heroku test version that is spun up is a test version at zero cost to us.
         """
-        with lcd('demo_django_postgres'):
-            local('fab fab_support.django.create_newbuild:test')  # Build database from scratch
-            # local('fab demo fab_support.django.kill_app')  # By default don't let it run after test
+        with lcd("demo_django_postgres"):
+            local("fab create_newbuild:test")
+        self.demo_project_actually_running(
+            "https://fab-support-test-postgres-test.herokuapp.com/"
+        )
 
     def test_typical_progression(self):
         """
@@ -96,10 +130,42 @@ class TestDjangoPostgresSupport(unittest.TestCase):
         Promote UAT to production
         remove old production  #  once you are comfortable with new production
         """
-        with lcd('demo_django_postgres'):
-            local('fab fab_support.django.create_newbuild:uat')  # Build database from scratch
-            local('fab fab_support.django.promote_uat')  # Build database from scratch
-            local('fab fab_support.django.build_app:uat')  # Build database from scratch
-            local('fab fab_support.django.promote_uat')  # Build database from scratch
-            # for stage in ['uat', 'prod', 'old_prod']:
-            #     local(f'fab demo fab_support.django.kill_app:{stage}')  # By default don't let it run after test
+        with lcd("demo_django_postgres"):
+            local("fab create_newbuild:uat")  # Build database from scratch
+            self.demo_project_actually_running(
+                "https://fab-support-test-postgres-uat.herokuapp.com/"
+            )
+            self.demo_project_actually_running(
+                "https://fab-support-test-postgres-prod.herokuapp.com/",
+                expect_running=False,
+            )
+            local("fab promote_to_prod:uat")  # Build database from scratch
+            self.demo_project_actually_running(
+                "https://fab-support-test-postgres-uat.herokuapp.com/",
+                expect_running=False,
+            )
+            self.demo_project_actually_running(
+                "https://fab-support-test-postgres-prod.herokuapp.com/"
+            )
+            self.demo_project_actually_running(
+                "https://fab-support-test-p-old-prod.herokuapp.com/",
+                expect_running=False,
+            )
+            local("fab create_newbuild:uat")  # Build database from scratch
+            self.demo_project_actually_running(
+                "https://fab-support-test-postgres-uat.herokuapp.com/"
+            )
+            local("fab promote_to_prod:uat")  # Build database from scratch
+            self.demo_project_actually_running(
+                "https://fab-support-test-postgres-uat.herokuapp.com/",
+                expect_running=False,
+            )
+            self.demo_project_actually_running(
+                "https://fab-support-test-postgres-prod.herokuapp.com/"
+            )
+            self.demo_project_actually_running(
+                "https://fab-support-test-p-old-prod.herokuapp.com/"
+            )
+            for stage in ['uat', 'prod', 'old_prod']:
+                self.stage = stage
+                self.tearDown()

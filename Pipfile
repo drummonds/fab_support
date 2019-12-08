@@ -26,6 +26,7 @@ PyYAML = "==5.1.2"
 Sphinx = "==2.2.1"
 Django = "==2.2.7"
 Fabric3 = "==1.14.post1"
+selenium = "*"
 
 [requires]
 python_version = "3.8"

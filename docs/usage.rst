@@ -191,6 +191,15 @@ Application              Default
 Heroku                   f'{HEROKU_APP_NAME}.herokuapp.com'
 ======================== ========================
 
+If you are using an external DNS record to redirection eg via CNAME to the internal Heroku name
+then you need to tell fab_support and Heroku that this is happening.
+The management of the external domain name is currently out of scope.  However there
+should be a DNS record of this type:
+
+.. code:: text
+
+    test.drummonds.net.        CNAME  fab_support_test_prod.herokuapp.com.
+
 .. _`ALLOWED_HOSTS`: https://docs.djangoproject.com/en/2.0/ref/settings/
 
 

@@ -2,9 +2,10 @@ import datetime as dt
 from fabric.api import env, local, task, lcd, settings
 import json
 import time
+from time import sleep
 
 from .heroku_utils import first_colour_database
-from .utils import repeat_run_local, FabricSupportException
+from .utils import repeat_run_local, FabricSupportException, wait_for_dyno_to_run
 
 # Global environment variables See documentation
 HEROKU_APP_NAME = 'fab-support-app-test'  # name of this stages Heroku app
@@ -271,14 +272,16 @@ def list_stages():
         print("env['stages'] has not been set.")
 
 
-def _promote_uat():
+def _promote_to_prod():
     """
     Promotes a stage typically, uat to production
     Saves old production for safety
     Should work if this is the first promotion ie no production database or if there is a production database.
     TODO require manual override if not uat
-    TODO do not run of old_prod exists.  Require manual deletion
+    TODO do not run if old_prod exists.  Require manual deletion
     """
+    # turn maintenance on
+    local(f'heroku maintenance:on --app {HEROKU_APP_NAME}')
     production_exists = True
     with settings(abort_exception=FabricSupportException):
         try:
@@ -292,24 +295,26 @@ def _promote_uat():
                 f'heroku apps:rename {HEROKU_OLD_PROD_APP_NAME} --app {HEROKU_PROD_APP_NAME}')  # Should fail if already an old_prod
         local(f'heroku apps:rename {HEROKU_PROD_APP_NAME} --app {HEROKU_APP_NAME}')
         if production_exists:
-            # Update allowed site
+            # Having moved from production to old proudction need to update allowed hosts
             local(
                 f'heroku config:set DJANGO_ALLOWED_HOSTS="{HEROKU_OLD_PROD_APP_NAME}.herokuapp.com" --app {HEROKU_OLD_PROD_APP_NAME}')
-            local(
-                f'heroku config:set DJANGO_ALLOWED_HOSTS="{HEROKU_PROD_APP_NAME}.herokuapp.com" --app {HEROKU_PROD_APP_NAME}')
-            if PRODUCTION_URL:
-                # Switch over domains
-                local(f'heroku domains:clear --app {HEROKU_OLD_PROD_APP_NAME}')
-                local(f'heroku domains:add {PRODUCTION_URL} --app {HEROKU_PROD_APP_NAME}')
+        local(
+            f'heroku config:set DJANGO_ALLOWED_HOSTS="{HEROKU_PROD_APP_NAME}.herokuapp.com" --app {HEROKU_PROD_APP_NAME}')
+        wait_for_dyno_to_run(HEROKU_PROD_APP_NAME)
+        if PRODUCTION_URL:
+            # Switch over domains
+            local(f'heroku domains:clear --app {HEROKU_OLD_PROD_APP_NAME}')
+            local(f'heroku domains:add {PRODUCTION_URL} --app {HEROKU_PROD_APP_NAME}')
     finally:
-        if production_exists:
-            local(f'heroku maintenance:off --app {HEROKU_PROD_APP_NAME} ')  # Different prod does this matter?
+        local(f'heroku maintenance:off --app {HEROKU_PROD_APP_NAME} ')
+        if production_exists:  # Then need to run maintenance off on what is now old production
+            local(f'heroku maintenance:off --app {HEROKU_OLD_PROD_APP_NAME} ')
 
 
-def promote_uat(stage='uat'):
+def promote_to_prod(stage='uat'):
     get_global_environment_variables(stage)
     start_time = time.time()
-    _promote_uat()
+    _promote_to_prod()
     end_time = time.time()
     runtime = str(dt.timedelta(seconds=int(end_time - start_time)))
     print(f'Run time = {runtime}')

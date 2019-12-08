@@ -24,7 +24,7 @@ def clean_test_pelican():
             print(result)
 
 
-class TestBasicFabSupport(unittest.TestCase):
+class TestPelicanFabSupport(unittest.TestCase):
 
     def test_set_stages(self):
         # Definition of different environments to deploy to
