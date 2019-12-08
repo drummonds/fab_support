@@ -69,7 +69,9 @@ def wait_for_dyno_to_run(app_name, repeats=5, interval=15):
         parsed = json.loads(result)
         try:
             if parsed["dynos"][0]["state"] == "up":
-                sleep(10)  #seems to need a little time from reporting up to actually running
+                sleep(10)  # seems to need a little time from reporting up to actually running
+                # This may not be long enough so may need additional tests in calling code
+                # See test code in test_django_postgres.demo_project_actually_running
                 return
         except KeyError:
             print(f'({i})Key error in getting {app_name} dyno status')

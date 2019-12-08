@@ -124,6 +124,7 @@ def _create_newbuild(stage):
     # Already promoted as new local('heroku pg:promote DATABASE_URL --app my-app-prod')
     # Leaving out and aws and reddis
     raw_update_app(stage)
+    wait_for_dyno_to_run(HEROKU_APP_NAME)
     local('heroku run python manage.py check --deploy')  # make sure all ok
 
     # Create superuser - the interactive command does not allow you to script the password
@@ -298,6 +299,7 @@ def _promote_to_prod():
             # Having moved from production to old proudction need to update allowed hosts
             local(
                 f'heroku config:set DJANGO_ALLOWED_HOSTS="{HEROKU_OLD_PROD_APP_NAME}.herokuapp.com" --app {HEROKU_OLD_PROD_APP_NAME}')
+            wait_for_dyno_to_run(HEROKU_OLD_PROD_APP_NAME)
         local(
             f'heroku config:set DJANGO_ALLOWED_HOSTS="{HEROKU_PROD_APP_NAME}.herokuapp.com" --app {HEROKU_PROD_APP_NAME}')
         wait_for_dyno_to_run(HEROKU_PROD_APP_NAME)
