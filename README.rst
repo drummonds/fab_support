@@ -15,6 +15,9 @@ fab_support - Simple Django Deployment
      :target: https://pyup.io/repos/github/drummonds/fab_support/
      :alt: Updates
 
+.. image:: https://pyup.io/repos/github/drummonds/fab_support/python-3-shield.svg
+     :target: https://pyup.io/repos/github/drummonds/fab_support/
+     :alt: Python 3
 
 Making deployment of simple Django projects simple to heroku and dokku with fabric.  This implement staging so as to
 make it trivial to test your code eg
