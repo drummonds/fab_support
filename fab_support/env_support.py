@@ -15,5 +15,4 @@ from dotenv import load_dotenv, find_dotenv
 # Get any required secret environment variables
 load_dotenv(find_dotenv())
 
-os.environ['UPDATE_DATESTAMP'] = dt.datetime.now().isoformat()
-
+os.environ["UPDATE_DATESTAMP"] = dt.datetime.now().isoformat()

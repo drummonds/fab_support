@@ -4,6 +4,7 @@ from fabric.api import task, env
 # This is only needed to run test fabfile's in a test directory
 import sys
 from pathlib import Path  # if you haven't already done so
+
 file = Path(__file__).resolve()
 parent, root = file.parent, file.parents[2]
 sys.path.append(str(root))
@@ -12,11 +13,7 @@ sys.path.append(str(root))
 import fab_support
 
 # Definition of different environments to deploy to
-env['stages'] = {
-    'demo': {
-        'comment': 'Simplest demo project',
-    },
-    }
+env["stages"] = {"demo": {"comment": "Simplest demo project"}}
 
 
 @task
@@ -24,12 +21,14 @@ def test_demo_fab_file():
     """A test task to show correct file has been loaded"""
     pass
 
+
 @task
 def identity():
     """Which version of fabfile am I using"""
     try:
         import fab_support
+
         version = f"fab_support version {fab_support._version.__version__}"
     except ImportError:
-        version = 'No fab_support to import'
+        version = "No fab_support to import"
     print(f"tests/basic fabfile {version}")

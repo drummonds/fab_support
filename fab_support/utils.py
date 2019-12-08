@@ -4,6 +4,7 @@ import json
 from time import sleep
 import sys
 
+
 class FabricSupportException(Exception):
     pass
 
@@ -56,7 +57,7 @@ def repeat_run_local(command, repeats=5, interval=15):
                 local(command)
                 return  # All good here
             except FabricSupportException:
-                print(f'  Sleep and retry command attempt {i+1}')
+                print(f"  Sleep and retry command attempt {i+1}")
         sleep(interval)
     # Now we have exhausted the retries and really need to bring this to a quick stop
     sys.exit(f"Retried '{command}' {repeats} times and still failed")
@@ -64,20 +65,20 @@ def repeat_run_local(command, repeats=5, interval=15):
 
 def wait_for_dyno_to_run(app_name, repeats=5, interval=15):
     for i in range(repeats):
-        result = local(
-            f'heroku apps:info --json --app {app_name}', capture=True)
+        result = local(f"heroku apps:info --json --app {app_name}", capture=True)
         parsed = json.loads(result)
         try:
             if parsed["dynos"][0]["state"] == "up":
-                sleep(10)  # seems to need a little time from reporting up to actually running
+                sleep(
+                    10
+                )  # seems to need a little time from reporting up to actually running
                 # This may not be long enough so may need additional tests in calling code
                 # See test code in test_django_postgres.demo_project_actually_running
                 return
         except KeyError:
-            print(f'({i})Key error in getting {app_name} dyno status')
+            print(f"({i})Key error in getting {app_name} dyno status")
             pass
-        print(f'({i})Waiting for {app_name} dyno to be up')
+        print(f"({i})Waiting for {app_name} dyno to be up")
         sleep(interval)
     # Now we have exhausted the retries and really need to bring this to a quick stop
     sys.exit(f"Waited for dyno '{app_name}' to be up {repeats} times and still failed")
-

@@ -5,15 +5,14 @@
 
 from setuptools import setup, find_packages
 
-with open('README.rst') as readme_file:
+with open("README.rst") as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
+with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-# requirements = [
+requirements = []
 #     # TODO: put package requirements here
-# ]
 #
 # setup_requirements = [
 #     # TODO(drummonds): put setup requirements (distutils extensions, etc.) here
@@ -24,36 +23,33 @@ with open('HISTORY.rst') as history_file:
 # ]
 
 # Get version variables
-exec(open('fab_support/_version.py').read())
+exec(open("fab_support/_version.py").read())
 
 # TODO copy version from __init__ or vice versa can also do author and author email
 setup(
-    name='fab-support',
+    name="fab-support",
     version=__version__,
     description="Implement staging in Fabric and recipes for pelican to [local, s3] and Django to Heroku.",
-    long_description=readme + '\n\n' + history,
-
+    long_description=readme + "\n\n" + history,
     author=__author__,
     author_email=__email__,
-    url='https://github.com/drummonds/fab_support',
-    packages=find_packages(include=['fab_support']),
+    url="https://github.com/drummonds/fab_support",
+    packages=find_packages(include=["fab_support"]),
     include_package_data=True,
     install_requires=requirements,
     # license="MIT license",
     zip_safe=False,
-    keywords='fab-support',
+    keywords="fab-support",
     classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
     ],
-    test_suite='tests',
+    test_suite="tests",
     # tests_require=test_requirements,
     # setup_requires=setup_requirements,
-    entry_points={
-        'console_scripts': ['fab-support=fab_support.command_line:main'],
-    }
+    entry_points={"console_scripts": ["fab-support=fab_support.command_line:main"]},
 )

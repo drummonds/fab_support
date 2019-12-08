@@ -16,11 +16,11 @@ def env_to_platform(stage):
     :param stage: Which stage is being used eg prod uat
     :return:
     """
-    platform = env['stages'][stage]["FS_PLATFORM"]
-    if platform in ('heroku',):  # limit for security
+    platform = env["stages"][stage]["FS_PLATFORM"]
+    if platform in ("heroku",):  # limit for security
         return platform
     else:
-        raise FabricSupportException(f'Unknown platform: {platform}')
+        raise FabricSupportException(f"Unknown platform: {platform}")
 
 
 def env_to_function(stage, my_function_name):
@@ -39,4 +39,3 @@ def env_to_function(stage, my_function_name):
 def fab_support_function(stage, function_name, **kwargs):
     func = env_to_function(stage, function_name)
     func(stage, **kwargs)
-

@@ -7,17 +7,17 @@ from fabric.api import env, task
 
 def list_stages():
     try:
-        stages = env['stages']
-        print('List of stages')
+        stages = env["stages"]
+        print("List of stages")
         for stage_name, stage in stages.items():
             try:
-                comment = stage['comment']
+                comment = stage["comment"]
             except KeyError:
-                comment = ''
-            print(f'{stage_name} - {comment}')
+                comment = ""
+            print(f"{stage_name} - {comment}")
     except KeyError:
         for k, v in env:
-            if k.lower() == 'stages':
+            if k.lower() == "stages":
                 print("env['{f}'] has been set but should probably be 'stages'")
         print("env['stages'] has not been set.")
 

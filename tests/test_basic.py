@@ -33,7 +33,9 @@ class TestBasicFabSupport(unittest.TestCase):
             )
             result2 = local("fab identity", capture=True)
             self.assertRegex(
-                result2, "tests/basic fabfile", "should be using local fab file with local task"
+                result2,
+                "tests/basic fabfile",
+                "should be using local fab file with local task",
             )
 
     def test_env_to_platform(self):
@@ -67,7 +69,9 @@ class TestBasicFabSupport(unittest.TestCase):
             )
             result2 = local("fab identity", capture=True)
             self.assertRegex(
-                result2, "tests/basic2 fabfile", "should be using local fab file with local task"
+                result2,
+                "tests/basic2 fabfile",
+                "should be using local fab file with local task",
             )
 
     def test_list_stages2(self):
@@ -78,12 +82,16 @@ class TestBasicFabSupport(unittest.TestCase):
             if verbose():
                 print(result)
             lines = result.split("\n")
-            print(f'lines = {lines}')
-            num_stages = len(lines) - 3  # CR and Done are added for implemenation of a task
+            print(f"lines = {lines}")
+            num_stages = (
+                len(lines) - 3
+            )  # CR and Done are added for implemenation of a task
             self.assertEqual(2, num_stages, "Should only be two stages")
             self.assertRegex(result, "demo", "demo stage")
             self.assertRegex(result, "tag:456", "production stage")
             result2 = local("fab identity", capture=True)
             self.assertRegex(
-                result2, "tests/basic2 fabfile", "should be using local fab file with local task"
+                result2,
+                "tests/basic2 fabfile",
+                "should be using local fab file with local task",
             )

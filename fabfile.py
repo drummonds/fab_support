@@ -22,7 +22,7 @@ def clean():
 
 
 def find_and_remove_tree(path, match):
-    return path+match
+    return path + match
 
 
 def clean_file(filename):
@@ -35,7 +35,7 @@ def clean_file(filename):
 def dir_list(path):
     for root, dirs, files in walk(path, topdown=False):
         for name in files:
-            print('{}'.format(join(root, name)))
+            print("{}".format(join(root, name)))
         for name in dirs:
             print(join(root, name))
 
@@ -45,71 +45,72 @@ def find_and_remove_file(path, match):
     for root, dirs, files in walk(path, topdown=False):
         for name in files:
             if regex.match(name):
-                print('deleting file {}'.format(join(root, name)))
+                print("deleting file {}".format(join(root, name)))
         # for name in dirs:
         #    print(join(root, name))
 
 
 def clean_build():
     """remove build artifacts"""
-    remove_tree(('build/', 'dist/', '.eggs/'))
-    find_and_remove_tree('.', '.egg-info$')
-    find_and_remove_file('.', '.egg$')
+    remove_tree(("build/", "dist/", ".eggs/"))
+    find_and_remove_tree(".", ".egg-info$")
+    find_and_remove_file(".", ".egg$")
 
 
 def clean_pyc():
     """remove Python file artifacts"""
-    find_and_remove_file('.', '.pyc$')
-    find_and_remove_file('.', '.pyo$')
-    find_and_remove_file('.', '~$')
-    find_and_remove_file('.', '__pycache__$')
+    find_and_remove_file(".", ".pyc$")
+    find_and_remove_file(".", ".pyo$")
+    find_and_remove_file(".", "~$")
+    find_and_remove_file(".", "__pycache__$")
 
 
 def clean_test():
     """remove test and coverage artifacts"""
-    remove_tree(('build/', '.tox/', 'htmlcov/'))
-    clean_file('.coverage')
+    remove_tree(("build/", ".tox/", "htmlcov/"))
+    clean_file(".coverage")
 
 
 @task
 def install():
     """Install the package to the active Python's site-packages"""
     clean()
-    local('python setup.py install')
+    local("python setup.py install")
 
 
 @task
 def dist():
     """builds source and wheel package"""
     clean()
-    local('python setup.py sdist')
-    local('python setup.py bdist_wheel')
-    dir_list('dist')
+    local("python setup.py sdist")
+    local("python setup.py bdist_wheel")
+    dir_list("dist")
 
 
 @task
 def release():
     """package and upload a release"""
     clean()
-    local('python setup.py sdist upload')
-    local('python setup.py bdist_wheel upload')
+    local("python setup.py sdist upload")
+    local("python setup.py bdist_wheel upload")
+
 
 @task
 def make_docs():
     """Create documentation"""
-    with lcd('docs'):
+    with lcd("docs"):
         ## generate Sphinx HTML documentation, including API docs
         try:
-            remove('docs/fab_support.rst')
+            remove("docs/fab_support.rst")
         except FileNotFoundError:
             pass
         try:
-            remove('docs/modules.rst')
+            remove("docs/modules.rst")
         except FileNotFoundError:
             pass
-        local('sphinx-apidoc -o . ../fab_support')
+        local("sphinx-apidoc -o . ../fab_support")
         # $ (MAKE) - C         docs         clean
-        local('make html')
+        local("make html")
         # $(BROWSER)    docs / _build / html / index.html
 
 
@@ -118,7 +119,10 @@ def identity():
     """Which version of fabfile am I using"""
     try:
         import fab_support
+
         version = f"fab_support version {fab_support._version.__version__}"
     except ImportError:
-        version = 'No fab_support to import'
-    print(f"Module fabfile {version}")  # Use print rather than exit to make it easier to capture test output
+        version = "No fab_support to import"
+    print(
+        f"Module fabfile {version}"
+    )  # Use print rather than exit to make it easier to capture test output

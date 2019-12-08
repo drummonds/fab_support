@@ -167,11 +167,13 @@ class TestHerokuDeployment(unittest.TestCase):
             settings_file = Path("demo_django/fab_support.json")
             with open(settings_file, "r") as f:
                 settings = json.load(f)
-                heroku_url = f"https://{settings['APP_NAME_PREFIX']}-demo.herokuapp.com/"
+                heroku_url = (
+                    f"https://{settings['APP_NAME_PREFIX']}-demo.herokuapp.com/"
+                )
             # What is the URL
             try:
                 options = Options()
-                options.add_argument('-headless')  # Run headless for CI testing
+                options.add_argument("-headless")  # Run headless for CI testing
                 # If you want to see then switch this off
                 self.browser = webdriver.Firefox(options=options)
                 self.browser.get(heroku_url)

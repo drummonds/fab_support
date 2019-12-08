@@ -46,7 +46,7 @@ class TestDjangoPostgresSupport(unittest.TestCase):
         """If you want to look at the test environment then uncomment this."""
         try:
             with lcd("demo_django_postgres"):
-                #local(f"fab kill_app:{self.stage}")  # Remove any existing run time
+                # local(f"fab kill_app:{self.stage}")  # Remove any existing run time
                 pass
         except SystemExit:
             pass
@@ -99,15 +99,19 @@ class TestDjangoPostgresSupport(unittest.TestCase):
                 pass
         return result
 
-    def demo_project_actually_running(self, at_url, expect_running=True, repeats = 8, interval = 20):
+    def demo_project_actually_running(
+        self, at_url, expect_running=True, repeats=8, interval=20
+    ):
         for i in range(repeats):
             is_running = self.test_project_running(at_url)
             if expect_running == is_running:
                 return
-            print(f'({i})Waiting for {at_url} project to run')
+            print(f"({i})Waiting for {at_url} project to run")
             sleep(interval)
         # Now we have exhausted the retries and really need to bring this to a quick stop
-        sys.exit(f"Waited for project at URL '{at_url}' to be up {repeats} times and still failed")
+        sys.exit(
+            f"Waited for project at URL '{at_url}' to be up {repeats} times and still failed"
+        )
 
     def test_django_postgres(self):
         """
@@ -169,6 +173,6 @@ class TestDjangoPostgresSupport(unittest.TestCase):
             self.demo_project_actually_running(
                 "https://fab-support-test-p-old-prod.herokuapp.com/"
             )
-            for stage in ['uat', 'prod', 'old_prod']:
+            for stage in ["uat", "prod", "old_prod"]:
                 self.stage = stage
                 self.tearDown()

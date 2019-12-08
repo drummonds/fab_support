@@ -27,12 +27,12 @@ def build(stage):
 
 
 @task
-def copy_images(stage, alias='ci'):
+def copy_images(stage, alias="ci"):
     """Copy files in all images directories into a root directory from which they can be deployed"""
-    src = Path(env['stages'][stage]['deploy_path']).ancestor(1).child('content')
-    dst = src.ancestor(1).child('images')
+    src = Path(env["stages"][stage]["deploy_path"]).ancestor(1).child("content")
+    dst = src.ancestor(1).child("images")
     for my_dir in src.walk(filter=DIRS):  # os.walk('./..'):
-        if my_dir.name == 'images':
+        if my_dir.name == "images":
             copy_tree(my_dir, dst)
 
 
@@ -51,14 +51,16 @@ def regenerate():
 @task
 def serve(stage):
     """Serve site at eg http://localhost:8000/"""
-    os.chdir(env['stages'][stage]['deploy_path'])
+    os.chdir(env["stages"][stage]["deploy_path"])
 
     class AddressReuseTCPServer(socketserver.TCPServer):
         allow_reuse_address = True
 
-    server = AddressReuseTCPServer(('', env['stages'][stage]['PORT']), ComplexHTTPRequestHandler)
+    server = AddressReuseTCPServer(
+        ("", env["stages"][stage]["PORT"]), ComplexHTTPRequestHandler
+    )
 
-    sys.stderr.write('Serving on port {0} ...\n'.format(env['stages'][stage]['PORT']))
+    sys.stderr.write("Serving on port {0} ...\n".format(env["stages"][stage]["PORT"]))
     server.serve_forever()
 
 
@@ -73,17 +75,17 @@ def reserve(stage):
 def deploy(stage):
     """Publish to stage. includes build."""
     build(stage)
-    deploy_path = env['stages'][stage]['deploy_path']
-    destination = env['stages'][stage]['destination']
-    copy_method = env['stages'][stage]['copy_method']
-    print(f'Using copy from {deploy_path} to {destination}')
+    deploy_path = env["stages"][stage]["deploy_path"]
+    destination = env["stages"][stage]["destination"]
+    copy_method = env["stages"][stage]["copy_method"]
+    print(f"Using copy from {deploy_path} to {destination}")
     copy_method(deploy_path, destination)
 
 
 @task
 def clean(stage):
     """Remove newly generated files from remote environment"""
-    destination = env['stages'][stage]['destination']
+    destination = env["stages"][stage]["destination"]
     if os.path.isdir(destination):
         shutil.rmtree(destination)
         os.makedirs(destination)
@@ -100,49 +102,64 @@ def s3_upload(stage):
     rebuild(stage)
     # get an access token, local (from) directory, and S3 (to) directory
     # from the command-line
-    #local_directory = Path(normpath('./output'))
-    local_directory = Path('./output').norm()
-    print('Local directory = {}',format(local_directory))
-    bucket = env['stages'][stage]['S3_BUCKET']
+    # local_directory = Path(normpath('./output'))
+    local_directory = Path("./output").norm()
+    print("Local directory = {}", format(local_directory))
+    bucket = env["stages"][stage]["S3_BUCKET"]
 
-    client = boto3.client('s3')
+    client = boto3.client("s3")
 
     # enumerate local files recursively
     for root, dirs, files in os.walk(local_directory):
         for filename in files:
             # construct the full local path
             local_path = Path(root, filename).norm()
-            print('Local path = {}', format(local_path))
+            print("Local path = {}", format(local_path))
             # construct the full S3 path
-            s3_path = '/'.join(local_directory.rel_path_to(local_path).components())[1:]
-            print('Searching for path "{}" in "{}" for {}'.format(s3_path, bucket, local_path))
+            s3_path = "/".join(local_directory.rel_path_to(local_path).components())[1:]
+            print(
+                'Searching for path "{}" in "{}" for {}'.format(
+                    s3_path, bucket, local_path
+                )
+            )
             try:
                 file = client.head_object(Bucket=bucket, Key=s3_path)
                 lt = dt.datetime.utcfromtimestamp(local_path.mtime())
-                #print('Local time {} and external time {}'.format(lt,file['LastModified']))
-                print("Path found on S3! Skipping {} which has {}...".format(s3_path, file['LastModified']))
+                # print('Local time {} and external time {}'.format(lt,file['LastModified']))
+                print(
+                    "Path found on S3! Skipping {} which has {}...".format(
+                        s3_path, file["LastModified"]
+                    )
+                )
 
                 try:
                     client.delete_object(Bucket=bucket, Key=s3_path)
                     print("Uploading %s..." % s3_path)
                     mime_type = mimetypes.guess_type(local_path)
-                    client.upload_file(local_path, bucket, s3_path, ExtraArgs={'ContentType': mime_type[0],
-                                                                               'ACL': 'public-read'})
+                    client.upload_file(
+                        local_path,
+                        bucket,
+                        s3_path,
+                        ExtraArgs={"ContentType": mime_type[0], "ACL": "public-read"},
+                    )
                 except:
                     print("Unable to delete %s..." % s3_path)
             except:
                 print("Uploading %s..." % s3_path)
                 mime_type = mimetypes.guess_type(local_path)
-                client.upload_file(local_path, bucket, s3_path, ExtraArgs={'ContentType': mime_type[0],
-                                                                           'ACL': 'public-read'})
+                client.upload_file(
+                    local_path,
+                    bucket,
+                    s3_path,
+                    ExtraArgs={"ContentType": mime_type[0], "ACL": "public-read"},
+                )
     # s3cmd sync $(OUTPUTDIR)/ s3://$(S3_BUCKET) --acl-public --delete-removed --guess-mime-type --no-mime-magic --no-preserve
-
-
 
 
 @task
 def gh_pages(stage):
     """Publish to GitHub Pages"""
     rebuild(stage)
-    local(f"ghp-import -b {env['stages'][stage]['github_pages_branch']} {env['stages'][stage]['destination']} -p")
-
+    local(
+        f"ghp-import -b {env['stages'][stage]['github_pages_branch']} {env['stages'][stage]['destination']} -p"
+    )
