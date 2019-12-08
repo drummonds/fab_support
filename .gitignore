@@ -44,8 +44,6 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
-tests/demo_django
-tests/output
 
 # Translations
 *.mo
@@ -66,5 +64,10 @@ target/
 # PyCharm
 .idea
 
-# My testing area
+# My local testing area
 playpen
+
+# Directories that are used to run tests
+tests/demo_django
+tests/output
+

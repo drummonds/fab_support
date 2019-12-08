@@ -1,13 +1,11 @@
 import datetime as dt
 from fabric.api import env, local, task, lcd, settings
 import json
-import os
-import re
 import time
 from time import sleep
 
 from .heroku_utils import first_colour_database
-from .utils import repeat_run_local, FabricSupportException
+from .utils import repeat_run_local, FabricSupportException, wait_for_dyno_to_run
 
 # Global environment variables See documentation
 HEROKU_APP_NAME = 'fab-support-app-test'  # name of this stages Heroku app
@@ -80,7 +78,6 @@ def raw_update_app(stage):
         with lcd(GIT_PUSH_DIR):
             local(GIT_PUSH)
     # Don't need to scale workers down as not using eg heroku ps:scale worker=0
-    # Will add guvscale to spin workers up and down from 0
     if USES_CELERY:
         local(f'heroku ps:scale worker=1 -a {HEROKU_APP_NAME}')
     # Have used performance web=standard-1x and worker=standard-2x but adjusted app to used less memory
@@ -119,10 +116,6 @@ def _create_newbuild(stage):
     local(f'heroku addons:create heroku-postgresql:{HEROKU_POSTGRES_TYPE} --app {HEROKU_APP_NAME}')
     local(f'heroku addons:create cloudamqp:lemur --app {HEROKU_APP_NAME}')
     local(f'heroku addons:create papertrail:choklad --app {HEROKU_APP_NAME}')
-    # Add guvscale processing to allow celery queue to be at zero
-    install_heroku_plugins(['heroku-cli-oauth', 'heroku-guvscale'])
-    # start of configuring guvscale to autoscale
-    # local(f'heroku guvscale:getconfig --app {HEROKU_APP_NAME}')
     # set database backup schedule
     repeat_run_local(f'heroku pg:wait --app {HEROKU_APP_NAME}')  # It takes some time for DB so wait for it
     # When wait returns the database is not necessarily completely finished preparing itself.  So the next
@@ -131,6 +124,7 @@ def _create_newbuild(stage):
     # Already promoted as new local('heroku pg:promote DATABASE_URL --app my-app-prod')
     # Leaving out and aws and reddis
     raw_update_app(stage)
+    wait_for_dyno_to_run(HEROKU_APP_NAME)
     local('heroku run python manage.py check --deploy')  # make sure all ok
 
     # Create superuser - the interactive command does not allow you to script the password
@@ -160,7 +154,6 @@ def get_global_environment_variables(stage):
             pass
 
 
-@task
 def create_newbuild(stage):
     get_global_environment_variables(stage)
     _create_newbuild(stage)
@@ -174,18 +167,20 @@ def _kill_app():
     """see kill app"""
     local(f'heroku destroy {HEROKU_APP_NAME} --confirm {HEROKU_APP_NAME}')
 
+def list_app_names():
+    results = json.loads(local("heroku apps --json", capture=True))
+    return [heroku_app['name'] for heroku_app in results]
 
-@task
+
 def kill_app(stage, safety_on=True):
     """Kill app notice that to the syntax for the production version is:
     fab the_stage kill_app:False"""
-    # Todo Add steps to verify that it exists (optional) and make sure it is deleted at the end
     get_global_environment_variables(stage)
-    if not (is_production() and not safety_on):
-        _kill_app()
+    if HEROKU_APP_NAME in list_app_names():
+        if not (is_production() and not safety_on):
+            _kill_app()
 
 
-@task
 def build_uat():
     """Build a new uat environments"""
     build_app('uat')
@@ -210,7 +205,6 @@ def _build_app(stage='uat'):
     local('heroku run "yes \'yes\' | python manage.py migrate"')  # Force deletion of stale content types
 
 
-@task
 def build_app(stage='uat'):
     start_time = time.time()
     get_global_environment_variables(stage)
@@ -230,7 +224,6 @@ def _create_new_db():
     return first_colour_database(app=HEROKU_APP_NAME)
 
 
-@task
 def create_new_db(stage='uat'):
     get_global_environment_variables(stage)
     return _create_new_db()
@@ -255,13 +248,11 @@ def _transfer_database_from_production(stage='test', clean=True):
         local('heroku maintenance:off --app {} '.format(HEROKU_APP_NAME))
 
 
-@task
 def transfer_database_from_production(stage='test', clean=True):
     get_global_environment_variables(stage)
     _transfer_database_from_production(stage, clean)
 
 
-@task
 def list_stages():
     """This is put here to test the exact same code in django as in set_stages.  In  one it seems to work
     and another to fail."""
@@ -282,14 +273,16 @@ def list_stages():
         print("env['stages'] has not been set.")
 
 
-def _promote_uat():
+def _promote_to_prod():
     """
     Promotes a stage typically, uat to production
     Saves old production for safety
     Should work if this is the first promotion ie no production database or if there is a production database.
     TODO require manual override if not uat
-    TODO do not run of old_prod exists.  Require manual deletion
+    TODO do not run if old_prod exists.  Require manual deletion
     """
+    # turn maintenance on
+    local(f'heroku maintenance:on --app {HEROKU_APP_NAME}')
     production_exists = True
     with settings(abort_exception=FabricSupportException):
         try:
@@ -303,25 +296,27 @@ def _promote_uat():
                 f'heroku apps:rename {HEROKU_OLD_PROD_APP_NAME} --app {HEROKU_PROD_APP_NAME}')  # Should fail if already an old_prod
         local(f'heroku apps:rename {HEROKU_PROD_APP_NAME} --app {HEROKU_APP_NAME}')
         if production_exists:
-            # Update allowed site
+            # Having moved from production to old proudction need to update allowed hosts
             local(
                 f'heroku config:set DJANGO_ALLOWED_HOSTS="{HEROKU_OLD_PROD_APP_NAME}.herokuapp.com" --app {HEROKU_OLD_PROD_APP_NAME}')
-            local(
-                f'heroku config:set DJANGO_ALLOWED_HOSTS="{HEROKU_PROD_APP_NAME}.herokuapp.com" --app {HEROKU_PROD_APP_NAME}')
-            if PRODUCTION_URL:
-                # Switch over domains
-                local(f'heroku domains:clear --app {HEROKU_OLD_PROD_APP_NAME}')
-                local(f'heroku domains:add {PRODUCTION_URL} --app {HEROKU_PROD_APP_NAME}')
+            wait_for_dyno_to_run(HEROKU_OLD_PROD_APP_NAME)
+        local(
+            f'heroku config:set DJANGO_ALLOWED_HOSTS="{HEROKU_PROD_APP_NAME}.herokuapp.com" --app {HEROKU_PROD_APP_NAME}')
+        wait_for_dyno_to_run(HEROKU_PROD_APP_NAME)
+        if PRODUCTION_URL:
+            # Switch over domains
+            local(f'heroku domains:clear --app {HEROKU_OLD_PROD_APP_NAME}')
+            local(f'heroku domains:add {PRODUCTION_URL} --app {HEROKU_PROD_APP_NAME}')
     finally:
-        if production_exists:
-            local(f'heroku maintenance:off --app {HEROKU_PROD_APP_NAME} ')  # Different prod does this matter?
+        local(f'heroku maintenance:off --app {HEROKU_PROD_APP_NAME} ')
+        if production_exists:  # Then need to run maintenance off on what is now old production
+            local(f'heroku maintenance:off --app {HEROKU_OLD_PROD_APP_NAME} ')
 
 
-@task
-def promote_uat(stage='uat'):
+def promote_to_prod(stage='uat'):
     get_global_environment_variables(stage)
     start_time = time.time()
-    _promote_uat()
+    _promote_to_prod()
     end_time = time.time()
     runtime = str(dt.timedelta(seconds=int(end_time - start_time)))
     print(f'Run time = {runtime}')

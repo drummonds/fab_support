@@ -11,17 +11,17 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    # TODO: put package requirements here
-]
-
-setup_requirements = [
-    # TODO(drummonds): put setup requirements (distutils extensions, etc.) here
-]
-
-test_requirements = [
-    # TODO: put package test requirements here
-]
+# requirements = [
+#     # TODO: put package requirements here
+# ]
+#
+# setup_requirements = [
+#     # TODO(drummonds): put setup requirements (distutils extensions, etc.) here
+# ]
+#
+# test_requirements = [
+#     # TODO: put package test requirements here
+# ]
 
 # Get version variables
 exec(open('fab_support/_version.py').read())
@@ -39,7 +39,7 @@ setup(
     packages=find_packages(include=['fab_support']),
     include_package_data=True,
     install_requires=requirements,
-    license="MIT license",
+    # license="MIT license",
     zip_safe=False,
     keywords='fab-support',
     classifiers=[
@@ -51,8 +51,8 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
-    tests_require=test_requirements,
-    setup_requires=setup_requirements,
+    # tests_require=test_requirements,
+    # setup_requires=setup_requirements,
     entry_points={
         'console_scripts': ['fab-support=fab_support.command_line:main'],
     }

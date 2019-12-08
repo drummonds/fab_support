@@ -1,5 +1,5 @@
-fab_support
-===========
+fab_support - Simple Django Deployment
+======================================
 
 .. image:: https://img.shields.io/pypi/v/fab_support.svg
         :target: https://pypi.python.org/pypi/fab_support
@@ -16,15 +16,26 @@ fab_support
      :alt: Updates
 
 
-Code to implement staging in Fabric and recipes for using that staging for pelican deployments and Django to Heroku.
+Making deployment of simple Django projects simple to heroku and dokku with fabric.  This implement staging so as to
+make it trivial to test your code eg
+
+.. code-block:: bash
+
+    fab build_uat
+
 It supports a local .env file importing for storing secrets that you don't want to store in git.
+
+See the roadmap_ for current development.
+
+.. _roadmap:
+    :target: https://drummonds.atlassian.net/secure/Roadmap.jspa?projectKey=FS&rapidView=1
 
 Stages
 ---------
 Stages are the different stages of development of an application.
 So they might go from:
 
-test -> uat -> production -> old production
+test → dev → uat → production → old production
 
 .. figure:: 2018-04-21staging.svg
     :alt: Use of staging
@@ -32,9 +43,11 @@ test -> uat -> production -> old production
     Different stages of a single project
 
 
-I have create a fab-support.py which does the heavy lifting of creating each environment.  The aim is that this should
+I have create a fab-support.py which does the heavy lifting of creating, updating and destroying each environment.
+The aim is that this should
 be hardly any more than the use of fabric and much simpler than the use of a full featured build Salt_ or Ansible_.  This
-is really only if you fit one of the use cases.  Like Ansible this is a simple single master deployment system.
+is really only if you fit one of the use cases.  Like Ansible this is a simple single master deployment system, unlike
+Ansible this is an opinated deployment of Django applications.
 
 
 .. _Salt: https://saltstack.com/
@@ -42,14 +55,15 @@ is really only if you fit one of the use cases.  Like Ansible this is a simple s
 
 Suitable use cases:
 
+    - Simple Django to Heroku where you have at a minimum two stages eg UAT and Production.
+        - Copes with Postgres database
+        - Static data in AWS
+
     - Deployment of Pelican static website
         - Deployment to local file system for use with a file server
         - Deployment to local for a file based browser
         - Deployment to S3
 
-    - Simple Django to Heroku where you have at a minimum two stages eg UAT and Production.
-        - Copes with Postgres database
-        - Static data in AWS
 
 In the root fabfile create a dictionary like this which
 documents how to deploy each stage:
@@ -80,7 +94,7 @@ Then the deployment by Pelican is pretty standardised eg build deploy and you ha
 
 `fab localsite deploy`
 
-I think it was inspired by BreytenErnsting_.  This is then reiplmeneted using the standard env environment
+I think it was inspired by BreytenErnsting_.  This is then reimplemented using the standard env environment
 and support in Fabric.
 
 
@@ -101,38 +115,6 @@ Features
 --------
 Runs on Windows.  If it is getting to complex then it should probably be ported to Ansible or Salt.
 
-
-Levels of fabfile in this module
---------------------------------
-In this module I use three levels of fabfile.py:
-
-- At the project root
-- at the /tests root
-- at a test/demo level
-
-This can get confusing, however they operate at different levels.  The project is about project operations eg
-releasing to fab_support to pypi.
-
-The tests level is then about managing the tests.  Some of these tests use fab support and a fabfile.py which gives you
-the third level of nesting.
-
-Project level fabfile
-~~~~~~~~~~~~~~~~~~~~~
-This is used to do work on the distribution:
-
-- Make deocumentation
-- build wheels
-- deploy wheels to the package manager
-
-At the tests level
-~~~~~~~~~~~~~~~~~~~~~
-This is used to run local commands.  Often the commands will be run from the test fab file level and then `lcd` to the
-demo level.
-
-At the tests/demo level
-~~~~~~~~~~~~~~~~~~~~~~~
-This is a model fabric file- however it is not like a normal one in that fab_support is not installed in the environment
-and in fact is located at `../../fab_support`.
 
 Credits
 -------

@@ -1,6 +1,6 @@
 import unittest
 
-from fab_support.django import install_heroku_plugins
+from fab_support.heroku import install_heroku_plugins
 
 class TestHeroku(unittest.TestCase):
 
