@@ -5,7 +5,7 @@ This will redirect various tasks to the correct platform to support them
 from fabric.api import env
 
 #
-import fab_support.heroku as heroku
+import fab_support
 from fab_support import FabricSupportException
 
 
@@ -17,7 +17,7 @@ def env_to_platform(stage):
     :return:
     """
     platform = env["stages"][stage]["FS_PLATFORM"]
-    if platform in ("heroku",):  # limit for security
+    if platform in ("heroku", "dokku"):  # limit for security
         return platform
     else:
         raise FabricSupportException(f"Unknown platform: {platform}")
@@ -31,11 +31,19 @@ def env_to_function(stage, my_function_name):
     :return:
     """
     platform = env_to_platform(stage)
-    the_module = globals()[platform]  # This is an indirect reference to the module
-    func = getattr(the_module, my_function_name)
+    fs = fab_support
+    func = getattr(getattr(fs, platform), my_function_name)
     return func
 
 
 def fab_support_function(stage, function_name, **kwargs):
+    """
+    Given a stage and a function name will indirectly call that function and pass the stage to it.
+    The function must have a parameter as stage.
+
+    :param stage: Which stage is being used eg prod uat
+    :param function_name: The name of the function to be called in the module defined by the platform variable.
+    :return:
+    """
     func = env_to_function(stage, function_name)
-    func(stage, **kwargs)
+    return func(stage, **kwargs)

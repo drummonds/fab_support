@@ -8,6 +8,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.firefox.options import Options
 
+from fab_support.heroku_utils import list_databases, first_colour_database
 from tests.utils import verbose
 
 from tests.demo_django_postgres import (
@@ -79,7 +80,7 @@ class TestDjangoPostgresSupport(unittest.TestCase):
             self.assertRegex(result, "uat", "UAT stage")
             self.assertRegex(result, "prod", "production stage")
 
-    def test_project_running(self, at_url):
+    def is_project_running(self, at_url):
         result = False
         try:
             options = Options()
@@ -103,7 +104,7 @@ class TestDjangoPostgresSupport(unittest.TestCase):
         self, at_url, expect_running=True, repeats=8, interval=20
     ):
         for i in range(repeats):
-            is_running = self.test_project_running(at_url)
+            is_running = self.is_project_running(at_url)
             if expect_running == is_running:
                 return
             print(f"({i})Waiting for {at_url} project to run")
@@ -127,6 +128,14 @@ class TestDjangoPostgresSupport(unittest.TestCase):
         self.demo_project_actually_running(
             "https://fab-support-test-postgres-test.herokuapp.com/"
         )
+
+
+    def test_list_database(self):
+        self.test_django_postgres()
+        print(list_databases(app="fab-support-test-postgres-prod"))
+        name, colour = first_colour_database(app="fab-support-test-postgres-prod")
+        print(f"{name}, {colour}")
+        self.assertTrue(True, "Tested list code, what it get backs depends on setup")
 
     def test_typical_progression(self):
         """

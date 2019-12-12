@@ -71,3 +71,7 @@ playpen
 tests/demo_django
 tests/output
 
+# Local secrets for testing
+.env
+
+

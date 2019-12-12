@@ -36,16 +36,7 @@ else:  # Create test file
 # Definition of different environments to deploy to
 # using a randomly generated to allow multiple tests of the same module to run together
 env["stages"] = {
-    "demo_heroku": {
-        "comment": "Demo version of Django to be deployed on Heroku",
-        "FS_PLATFORM": "heroku",
-        "HEROKU_APP_NAME": f"{APP_NAME_PREFIX}-demo",
-        "GIT_BRANCH": "master",  # Local git branch to copy to Heroku
-        "ENV": {
-            "DJANGO_SETTINGS_MODULE": "demo_django.settings"  # Essential as django doesn't know name of app
-        },
-    },
-    "demo_dokku": {
+    "demo": {
         "comment": "Demo version of Django to be deployed on Heroku",
         "FS_PLATFORM": "dokku",
         "APP_NAME": f"{APP_NAME_PREFIX}-demo",
@@ -54,7 +45,6 @@ env["stages"] = {
             "DJANGO_SETTINGS_MODULE": "demo_django.settings"  # Essential as django doesn't know name of app
         },
     }
-
 }
 
 
@@ -82,9 +72,9 @@ def list_stages():
 
 @task
 def list_app_names(stage="demo", **kwargs):
-    """Basic use of a deployment function.  The platform name is passed implicitly via the stage environment definition.
-    Even though the results are generic to that platform and not specific to the stage"""
-    result = fab_support_function(stage, "list_app_names", **kwargs)
+    """Showing use of a helper function"""
+    return fab_support_function(stage, "list_app_names", **kwargs)
+
 
 
 @task

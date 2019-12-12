@@ -203,16 +203,25 @@ def _kill_app():
     local(f"heroku destroy {HEROKU_APP_NAME} --confirm {HEROKU_APP_NAME}")
 
 
-def list_app_names():
+def _list_app_names():
+    """Lists the current apps, stage is ignored but has been used to capture which platform to list from"""
     results = json.loads(local("heroku apps --json", capture=True))
     return [heroku_app["name"] for heroku_app in results]
+
+def list_app_names(stage):
+    """list app names as a fabric task
+    :param: stage is not required for _list_app_names but is a parameter to make compatible with general calling
+    method
+    :return: List of apps names"""
+    return _list_app_names()
+
 
 
 def kill_app(stage, safety_on=True):
     """Kill app notice that to the syntax for the production version is:
     fab the_stage kill_app:False"""
     get_global_environment_variables(stage)
-    if HEROKU_APP_NAME in list_app_names():
+    if HEROKU_APP_NAME in _list_app_names():
         if not (is_production() and not safety_on):
             _kill_app()
 

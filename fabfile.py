@@ -5,7 +5,7 @@ import re
 import sys
 
 from tests.test_utils import remove_tree
-from tests.test_django import clean_test_django
+from tests.django_demo_utils import clean_setup
 from tests.test_django_postgres import clean_setup_postgres
 from tests.test_pelican import clean_test_pelican
 
@@ -16,7 +16,9 @@ def clean():
     clean_build()
     clean_pyc()
     clean_test()
-    clean_test_django()
+    # Demo django artifacts
+    for platform in ("heroku", "dokku"):
+        clean_setup(platform)
     clean_setup_postgres()
     clean_test_pelican()
 
