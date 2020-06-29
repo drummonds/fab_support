@@ -11,4 +11,4 @@ gunicorn==20.0.4
 
 # Environment and static files
 django-environ==0.4.5
-whitenoise==4.1.4
+whitenoise==5.1.0
