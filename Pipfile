@@ -24,7 +24,7 @@ watchdog = "==0.9.0"
 whitenoise = "==4.1.4"
 PyYAML = "==5.1.2"
 Sphinx = "==2.2.1"
-Django = "==2.2.7"
+Django = "==2.2.18"
 Fabric3 = "==1.14.post1"
 selenium = "*"
 
