@@ -7,7 +7,7 @@ model_mommy==2.0.0
 # WSGI Handler
 # ------------------------------------------------
 gevent==21.8.0
-gunicorn==20.0.4
+gunicorn==20.1.0
 
 # Environment and static files
 django-environ==0.4.5
