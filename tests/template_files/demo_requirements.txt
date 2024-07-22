@@ -3,6 +3,6 @@ psycopg2-binary==2.9.9  # Without this will crash?
 
 # WSGI Handler
 # ------------------------------------------------
-gevent==1.4.0
+gevent==24.2.1
 gunicorn==20.0.4
 
