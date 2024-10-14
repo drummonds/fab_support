@@ -1,4 +1,4 @@
-django==3.0
+django==5.1.2
 psycopg2-binary==2.8.4  # Without this will crash?
 django-allauth==0.40.0 # sign in niceties
 django-tables2==2.2.1 # Demo table format
